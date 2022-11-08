@@ -1,15 +1,15 @@
 import { gettext as getText } from "i18n";
-import { DEFAULT_COLOR, DEFAULT_COLOR_TRANSPARENT } from "./constants";
 import { DEVICE_WIDTH } from "./device";
+import {Colors} from "./constants";
 
 export const DEBUG_TEXT = {
-  x: 0,
-  y: 80,
-  w: 400,
-  h: 450,
-  text_size: 12,
+  x: px(30),
+  y: px(80),
+  w: px(400),
+  h: px(450),
+  text_size: px(12),
   char_space: 0,
-  color: 0xffffff,
+  color: Colors.white,
   text: "",
   text_style: hmUI.text_style.NONE,
   align_h: hmUI.align.LEFT,
@@ -22,7 +22,7 @@ export const COMMON_TITLE_TEXT = {
   y: px(100),
   w: px(288),
   h: px(46),
-  color: 0xffffff,
+  color: Colors.white,
   text_size: px(36),
   align_h: hmUI.align.CENTER_H,
   align_v: hmUI.align.CENTER_V,

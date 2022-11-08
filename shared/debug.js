@@ -2,13 +2,12 @@ import { DEBUG_TEXT } from "../utils/config/styles";
 import { zeroPad } from "./date";
 
 export class DebugText {
-  constructor(screen) {
+  constructor() {
     this.t = hmSensor.createSensor(hmSensor.id.TIME);
     this.debugTextText = "";
-    this.widget = screen.createWidget(hmUI.widget.TEXT, DEBUG_TEXT);
-
-    this.screen = screen;
+    this.widget = hmUI.createWidget(hmUI.widget.TEXT, DEBUG_TEXT);
     this.lines = 0;
+    this.enabled = true;
   }
 
   setLines(lines) {
@@ -16,10 +15,14 @@ export class DebugText {
   }
 
   log(text) {
+    if (!this.enabled) {
+      this.debugTextText = "";
+      return;
+    }
     this.debugTextText +=
       this.getTime() + ":" + DebugText.objToString(text) + "\r\n";
     var lines = this.debugTextText.split("\r\n");
-    if (this.lines != 0 && lines.length > this.lines) {
+    if (this.lines !== 0 && lines.length > this.lines) {
       // remove line, starting at the first position
       lines.splice(0, lines.length - 1 - this.lines);
     }

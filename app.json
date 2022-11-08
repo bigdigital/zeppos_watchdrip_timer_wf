@@ -28,6 +28,9 @@
           "main": 1,
           "editable": 1,
           "lockscreen": 1
+        },
+        "app-side": {
+          "path": "app-side/index"
         }
       },
       "platforms": [
@@ -49,5 +52,5 @@
     }
   },
   "defaultLanguage": "en-US",
-  "debug": false
+  "debug": true
 }

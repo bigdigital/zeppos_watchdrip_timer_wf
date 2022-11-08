@@ -21,7 +21,7 @@ function str2ab(str) {
 export function statSync(filename) {
   logger.log("statSync", filename);
   //获取文件信息
-  const [fs_stat, err] = hmFS.stat(filename);
+  const [fs_stat, err] = stat(filename);
   logger.log("res", fs_stat, err);
   if (err == 0) {
     logger.log("fs--->size:", fs_stat.size);
@@ -30,6 +30,15 @@ export function statSync(filename) {
     logger.log("fs--->err:", err);
     return null;
   }
+}
+
+export function stat(path) {
+  if (path.startsWith("/storage")) {
+    const statPath = "../../../" + path.substring(9);
+    return hmFS.stat_asset(statPath);
+  }
+
+  return hmFS.stat(path);
 }
 
 /**
@@ -45,7 +54,7 @@ export function writeFileSync(filename, data, options) {
   const source_buf = new Uint8Array(stringBuffer);
 
   //打开/创建文件
-  const file = hmFS.open(filename, hmFS.O_CREAT | hmFS.O_RDWR | hmFS.O_TRUNC);
+  const file = open(filename, hmFS.O_CREAT | hmFS.O_RDWR | hmFS.O_TRUNC);
   logger.log("writeFileSync file open success -->", file);
   //定位到文件开始位置
   hmFS.seek(file, 0, hmFS.SEEK_SET);
@@ -56,18 +65,26 @@ export function writeFileSync(filename, data, options) {
   logger.log("writeFileSync success -->", filename);
 }
 
+export function open(path, m) {
+  if (path.startsWith("/storage")) {
+    const statPath = "../../../" + path.substring(9);
+    return hmFS.open_asset(statPath, m);
+  }
+
+  return hmFS.open(path, m);
+}
+
 /**
  * Write data to a file in a single operation. If a file with that name already exists, it is overwritten; otherwise, a new file is created.
  * @param {*} filename
  * @param {*} data
  * @param {*} options
  */
-export function writeRawFileSync(filename, data, options) {
+export function writeRawFileSync(filename, source_buf, options) {
   logger.log("writeRawFileSync begin -->", filename);
-  const source_buf = new Uint8Array(stringBuffer);
 
   //打开/创建文件
-  const file = hmFS.open(filename, hmFS.O_CREAT | hmFS.O_RDWR | hmFS.O_TRUNC);
+  const file = open(filename, hmFS.O_CREAT | hmFS.O_RDWR | hmFS.O_TRUNC);
   logger.log("writeFileSync file open success -->", file);
   //定位到文件开始位置
   hmFS.seek(file, 0, hmFS.SEEK_SET);
