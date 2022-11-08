@@ -1,9 +1,21 @@
+import {watchdrip} from "../../watchface/round";
+
 const BG_STALE_TIME_MS = 30 * 60 * 1000;
 
 export class WatchdripData {
     constructor(timeSensor) {
         this.data = null;
         this.timeSensor = timeSensor;
+    }
+
+    getEmptyIfNotDefined(paramName) {
+        if (this.data == null) {
+            return "";
+        }
+        if (paramName in this.data) {
+            return this.data[paramName]
+        }
+        return "";
     }
 
     setData(data) {
@@ -26,19 +38,9 @@ export class WatchdripData {
         return this.getEmptyIfNotDefined("bgVal");
     }
 
-    getEmptyIfNotDefined(paramName) {
-        if (this.data == null) {
-            return "";
-        }
-        if (paramName in this.data) {
-            return this.data[paramName]
-        }
-        return "";
-    }
-
     getArrowText()
     {
-        switch (this.getEmptyIfNotDefined("arrow"))
+        switch (this.getEmptyIfNotDefined("deltaName"))
         {
             case 'FortyFiveDown':
                 return '↘';
@@ -57,5 +59,11 @@ export class WatchdripData {
             default:
                 return "";
         }
+    }
+
+    getArrowResource()
+    {
+        let deltaName = this.getEmptyIfNotDefined("deltaName");
+        return "watchdrip/images/arrows/" + deltaName + ".png"
     }
 }
