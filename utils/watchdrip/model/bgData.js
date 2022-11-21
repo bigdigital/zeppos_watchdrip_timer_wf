@@ -1,0 +1,53 @@
+export class BgData {
+    constructor(val, delta, trend, isHigh, isLow, time, isStale) {
+        this.val = val;
+        this.delta = delta;
+        this.trend = trend;
+        this.isHigh = isHigh;
+        this.isLow = isLow;
+        this.time = time;
+        this.isStale = isStale;
+    }
+
+    getBGVal(){
+        if (this.val === '') return "No data";
+        return this.val;
+    }
+
+    // static createEmpty() {
+    //     return new BgData("", "", "", false, false, null, true);
+    // }
+
+    static createEmpty() {
+        return new BgData("10.5", "", "Flat", true, false, "1668975954793", true);
+    }
+
+    getArrowText() {
+        switch (this.trend) {
+            case 'FortyFiveDown':
+                return '↘';
+            case 'FortyFiveUp':
+                return '↗';
+            case 'Flat':
+                return '→';
+            case 'SingleDown':
+                return '↓';
+            case 'DoubleDown':
+                return '↓↓';
+            case 'SingleUp':
+                return '↑';
+            case 'DoubleUp':
+                return '↑↑';
+            default:
+                return "";
+        }
+    }
+
+    getArrowResource() {
+        let fileName = this.trend;
+        if (fileName === undefined || fileName === ""){
+            fileName = "None";
+        }
+        return `images/watchdrip/arrows/${fileName}.png`;
+    }
+}

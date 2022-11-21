@@ -8,9 +8,10 @@ import {
     WF_INFO_LAST_UPDATE
 } from "../config/global-constants";
 import {json2str, str2json} from "../../shared/data";
-import {COMMON_TITLE_TEXT} from "../config/styles";
+import {BG_TIME_TEXT, BG_TREND_IMAGE, BG_VALUE_TEXT} from "../config/styles";
 import {MessageBuilder} from "../../shared/message";
 import {
+    Colors,
     Commands,
     DATA_STALE_TIME_MS,
     DATA_TIMER_UPDATE_INTERVAL_MS,
@@ -18,7 +19,6 @@ import {
 } from "../config/constants";
 import {debug, watchdrip} from "../../watchface/round";
 import {WatchdripData} from "./watchdrip-data";
-import {getRandomInt} from "../helper";
 
 let {messageBuilder} = getApp()._options.globalData;
 
@@ -40,16 +40,22 @@ export class Watchdrip {
 
         this.intervalTimer = null;
         this.checkConfigUpdate();
+        //this.initWidgets();
+        this.readInfo();
+    }
+
+    start() {
+        this.updateValuesWidget();
+        //Monitor watchface activity in order to recreate connection
         hmUI.createWidget(hmUI.widget.WIDGET_DELEGATE, {
             resume_call: this.widgetDelegateCallbackResumeCall,
             pause_call: this.widgetDelegateCallbackPauseCall,
         })
-        this.initWidgets();
     }
 
     startDataUpdates() {
         if (this.intervalTimer != null) return; //already started
-        debug.log("startDataUpdates");
+        //debug.log("startDataUpdates");
         this.checkUpdates(); //start immediately
         this.intervalTimer = this.globalNS.setInterval(() => {
             this.checkUpdates();
@@ -58,7 +64,7 @@ export class Watchdrip {
 
     stopDataUpdates() {
         if (this.intervalTimer !== null) {
-            debug.log("stopDataUpdates");
+            //debug.log("stopDataUpdates");
             this.globalNS.clearInterval(this.intervalTimer);
             this.intervalTimer = null;
         }
@@ -75,9 +81,10 @@ export class Watchdrip {
     }
 
     checkUpdates() {
+        this.updateTimesWidget();
         //debug.log("checkUpdates");
         if (this.updatingData) {
-            debug.log("updatingData, return");
+            // debug.log("updatingData, return");
             return;
         }
         let lastInfoUpdate = hmFS.SysProGetInt64(WF_INFO_LAST_UPDATE);
@@ -94,10 +101,15 @@ export class Watchdrip {
                 return;
             }
         } else {
-            if (!this.lastUpdateSucessful && this.lastUpdateAttempt !== null && (utc - this.lastUpdateAttempt > DATA_STALE_TIME_MS)) {
-                debug.log("reached DATA_STALE_TIME_MS");
-                watchdrip.fetchInfo();
-                return;
+            if (!this.lastUpdateSucessful) {
+                if (this.lastUpdateAttempt !== null)
+                    if ((utc - this.lastUpdateAttempt > DATA_STALE_TIME_MS)) {
+                        debug.log("reached DATA_STALE_TIME_MS");
+                        watchdrip.fetchInfo();
+                        return;
+                    } else {
+                        return;
+                    }
             }
             if ((utc - lastInfoUpdate > DATA_UPDATE_INTERVAL_MS)) {
                 debug.log("reached DATA_UPDATE_INTERVAL_MS");
@@ -110,20 +122,16 @@ export class Watchdrip {
             }
             watchdrip.fetchInfo();
         }
-
-
     }
 
     update() {
         this.checkConfigUpdate();
-        debug.log(this.watchdripConfig)
-        if (this.watchdripConfig != null) {
-            // debug.enabled = this.watchdripConfig.showLog
-            if (this.watchdripConfig.disableUpdates === true) {
-                this.stopDataUpdates();
-            } else {
-                this.startDataUpdates();
-            }
+        //debug.log(this.watchdripConfig)
+        // debug.enabled = this.watchdripConfig.showLog
+        if (this.watchdripConfig.disableUpdates === true) {
+            this.stopDataUpdates();
+        } else {
+            this.startDataUpdates();
         }
     }
 
@@ -143,65 +151,94 @@ export class Watchdrip {
         this.lastUpdateAttempt = this.timeSensor.utc;
     }
 
+    //init watchdrip related widgets
     initWidgets() {
-        this.bgValTextWidget = hmUI.createWidget(hmUI.widget.TEXT, COMMON_TITLE_TEXT);
-        this.drawGraph();
+        this.bgValTextWidget = hmUI.createWidget(hmUI.widget.TEXT, BG_VALUE_TEXT);
+        this.bgValTimeTextWidget = hmUI.createWidget(hmUI.widget.TEXT, BG_TIME_TEXT);
+        this.bgTrendImageWidget = hmUI.createWidget(hmUI.widget.IMG, BG_TREND_IMAGE);
+
+        // this.drawGraph();
     }
 
+    //connect watch with side app
     initConnection() {
         const appId = WATCHDRIP_APP_ID;
         messageBuilder = new MessageBuilder({appId});
         messageBuilder.connect();
     }
 
+    /*Callback which is called  when watchface is active  (visible)*/
     widgetDelegateCallbackResumeCall() {
-        debug.log("resume_call");
+        //debug.log("resume_call");
         watchdrip.initConnection();
         watchdrip.updatingData = false;
         watchdrip.update();
     }
 
+    /*Callback which is called  when watchface deactivating (not visible)*/
     widgetDelegateCallbackPauseCall() {
-        debug.log("pause_call");
+        //debug.log("pause_call");
         watchdrip.stopDataUpdates();
         watchdrip.updatingData = false;
         messageBuilder.disConnect();
     }
 
     updateWidgets() {
-        debug.log("updateWidgets");
+        this.updateValuesWidget()
+        this.updateTimesWidget()
+    }
+
+    updateValuesWidget() {
+        let bgValColor = Colors.white;
+        let bgObj = this.watchdripData.getBg();
+        if (bgObj.isHigh) {
+            bgValColor = Colors.bgHigh;
+        } else if (bgObj.isLow) {
+            bgValColor = Colors.bgLow;
+        }
+
         this.bgValTextWidget.setProperty(hmUI.prop.MORE, {
-            text: this.watchdripData.getBgVal(),
+            text: bgObj.getBGVal() + bgObj.getArrowText(),
+            color: bgValColor,
+        });
+
+        this.bgTrendImageWidget.setProperty(hmUI.prop.SRC, bgObj.getArrowResource());
+    }
+
+    updateTimesWidget() {
+        let bgObj = this.watchdripData.getBg();
+        this.bgValTimeTextWidget.setProperty(hmUI.prop.MORE, {
+            text: this.watchdripData.getTimeAgo(bgObj.time),
         });
     }
 
-    drawGraph(){
-         // const lineDatas = [
-         //   { x: 0, y: 0 },
-         //   { x: 100, y: 10, color: 0xfc6950 },
-         //   { x: 200, y: 50, color: 0x1ad9cc },
-         //   { x: 100, y: 2, item_color: 0x1ad9cc, item_width: 11},
-         //   { x: 300, y: 50, width: 10 },
-         // ];
+    drawGraph() {
+        // const lineDatas = [
+        //   { x: 0, y: 0 },
+        //   { x: 100, y: 10, color: 0xfc6950 },
+        //   { x: 200, y: 50, color: 0x1ad9cc },
+        //   { x: 100, y: 2, item_color: 0x1ad9cc, item_width: 11},
+        //   { x: 300, y: 50, width: 10 },
+        // ];
 
         let pointWidth = 2;
 
-         var widget = hmUI.createWidget(hmUI.widget.GRADKIENT_POLYLINE, {
-           x: 0,
-           y: 200,
-           w: 480,
-           h: 200,
-             line_color: 0xfc6950, // ok
-             line_width: pointWidth , // ok
-             //type: 39, //spec val 5 , 27
-         });
-         var hLine = hmUI.createWidget(hmUI.widget.GRADKIENT_POLYLINE, {
+        var widget = hmUI.createWidget(hmUI.widget.GRADKIENT_POLYLINE, {
+            x: 0,
+            y: 200,
+            w: 480,
+            h: 200,
+            line_color: 0xfc6950, // ok
+            line_width: pointWidth, // ok
+            //type: 39, //spec val 5 , 27
+        });
+        var hLine = hmUI.createWidget(hmUI.widget.GRADKIENT_POLYLINE, {
             x: 0,
             y: 300,
             w: 480,
             h: 200,
             line_color: 0xBF0B0B, // ok
-            line_width: pointWidth , // ok
+            line_width: pointWidth, // ok
             //type: 39, //spec val 5 , 27
         });
         var lLine = hmUI.createWidget(hmUI.widget.GRADKIENT_POLYLINE, {
@@ -210,32 +247,32 @@ export class Watchdrip {
             w: 480,
             h: 200,
             line_color: 0x008000, // ok
-            line_width: pointWidth , // ok
+            line_width: pointWidth, // ok
             //type: 39, //spec val 5 , 27
         });
 
-         widget.clear(); //clear the canvas
-         // widget.addLine({
-         // //   //Add line.
-         //   data: lineDatas,
-         //   count: lineDatas.length,
-         //    line_color: 0x1ad9cc,
-         //     item_color: 0x1ad9cc,
-         //     color: 0x1ad9cc,
-         //     item_width: 11,
-         //     configs: {
-         //         colors: [0x000000, 0xffffff],
-         //         color_stops:1,
-         //         color_count:2
-         //     }
-         // });
+        widget.clear(); //clear the canvas
+        // widget.addLine({
+        // //   //Add line.
+        //   data: lineDatas,
+        //   count: lineDatas.length,
+        //    line_color: 0x1ad9cc,
+        //     item_color: 0x1ad9cc,
+        //     color: 0x1ad9cc,
+        //     item_width: 11,
+        //     configs: {
+        //         colors: [0x000000, 0xffffff],
+        //         color_stops:1,
+        //         color_count:2
+        //     }
+        // });
 
         let points = [];
-        let xfinal = 480-pointWidth;
-        let yfinal = 200-pointWidth;
-        let pointIncrement= pointWidth+4
-        for (let x = pointWidth/2; x < xfinal; x = x+pointIncrement) {
-            for (let y = pointWidth/2; y < yfinal; y = y+pointIncrement) {
+        let xfinal = 480 - pointWidth;
+        let yfinal = 200 - pointWidth;
+        let pointIncrement = pointWidth + 4
+        for (let x = pointWidth / 2; x < xfinal; x = x + pointIncrement) {
+            for (let y = pointWidth / 2; y < yfinal; y = y + pointIncrement) {
                 // getRandomInt(10, 199)
                 let point = {x: x, y: y}
                 //logger.log("x:" + point[0].x + " y:" + point[0].y)
@@ -250,8 +287,8 @@ export class Watchdrip {
 
         let linePoints = [{x: 0, y: 50}, {x: 480, y: 50}];
         hLine.addLine({
-            data: linePoints,
-            count: linePoints.length
+                data: linePoints,
+                count: linePoints.length
             }
         )
 
@@ -329,7 +366,7 @@ export class Watchdrip {
             debug.log("No bt connection");
             return;
         }
-        debug.log("bt connection ok");
+        // debug.log("bt connection ok");
         this.updatingData = true;
         messageBuilder
             .request({
@@ -340,13 +377,18 @@ export class Watchdrip {
             .then((data) => {
                 debug.log("received data");
                 const {result: info = {}} = data;
-                debug.log(info);
+                //debug.log(info);
                 try {
+                    if (info.error) {
+                        debug.log("error:" + data.message);
+                        return;
+                    }
                     let data = str2json(info);
+
                     this.watchdripData.setData(data);
+                    this.watchdripData.updateTimeDiff();
+
                     this.lastInfoUpdate = this.saveInfo(info);
-                    let text = this.watchdripData.getBgTimestamp() + " " + this.watchdripData.getBgVal();
-                    debug.log(text);
                     this.lastUpdateSucessful = true;
                     this.updateWidgets();
                 } catch (e) {
@@ -361,6 +403,19 @@ export class Watchdrip {
             });
     }
 
+    readInfo() {
+        let info = hmFS.SysProGetChars(WF_INFO);
+        let data = {};
+        if (info) {
+            try {
+                data = str2json(info);
+            } catch (e) {
+
+            }
+        }
+        this.watchdripData.setData(data);
+    }
+
     saveInfo(info) {
         hmFS.SysProSetChars(WF_INFO, info);
         let time = this.timeSensor.utc;
@@ -368,6 +423,7 @@ export class Watchdrip {
         return time;
     }
 
+    /*Read config which is defined in the app. If not defined, init config*/
     readConfig() {
         var configStr = hmFS.SysProGetChars(WATCHDRIP_CONFIG);
         if (!configStr) {
@@ -387,6 +443,7 @@ export class Watchdrip {
         hmFS.SysProSetChars(WATCHDRIP_CONFIG_LAST_UPDATE, this.timeSensor.utc);
     }
 
+    /* will check last config updates to sync config with app*/
     checkConfigUpdate() {
         var configLastUpdate = hmFS.SysProGetInt64(WATCHDRIP_CONFIG_LAST_UPDATE);
         if (this.configLastUpdate !== configLastUpdate) {
@@ -395,7 +452,7 @@ export class Watchdrip {
         }
     }
 
-    onDestroy() {
+    destroy() {
         if (this.system_alarm_id !== null) {
             hmApp.alarmCancel(this.system_alarm_id);
         }

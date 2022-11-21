@@ -98,7 +98,7 @@ WatchFace({
         };
 
         var screenType = hmSetting.getScreenType();
-        /*if (screenType == hmSetting.screen_type.AOD) {
+        if (screenType == hmSetting.screen_type.AOD) {
           imgBg = hmUI.createWidget(hmUI.widget.FILL_RECT, {
             x: px(0),
             y: px(0),
@@ -113,9 +113,11 @@ WatchFace({
             w: px(480),
             h: px(480),
             src: img("bg/bg.png"),
-            show_level: hmUI.show_level.ONAL_NORML,
+            show_level: hmUI.show_level.ONLY_NORMAL,
           });
-        }*/
+        }
+
+        watchdrip.initWidgets();
 
         hourPoint = hmUI.createWidget(hmUI.widget.IMG, {
             x: px(0),
@@ -437,20 +439,20 @@ WatchFace({
 
     onInit() {
         logger.log("wf on init invoke");
-        initDebug();
-        debug.log("onInit");
-    },
+            },
 
     build() {
         logger.log("wf on build invoke");
-        debug.log("build");
-        //this.initView();
         watchdrip = new Watchdrip();
+        this.initView();
+        initDebug();
+        debug.log("build");
+        watchdrip.start();
     },
 
     onDestroy() {
         logger.log("wf on destroy invoke");
-        watchdrip.onDestroy();
+        watchdrip.destroy();
     },
 
     onShow() {

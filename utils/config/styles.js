@@ -16,15 +16,32 @@ export const DEBUG_TEXT = {
   align_v: hmUI.align.TOP,
 };
 
-
-export const COMMON_TITLE_TEXT = {
-  x: px(96),
-  y: px(100),
-  w: px(288),
-  h: px(46),
+export const BG_VALUE_TEXT = {
+  x: px(50),
+  y: px(90),
+  w: px(230),
+  h: px(50),
   color: Colors.white,
-  text_size: px(36),
-  align_h: hmUI.align.CENTER_H,
+  text_size: px(50),
+  align_h: hmUI.align.RIGHT,
   align_v: hmUI.align.CENTER_V,
   text_style: hmUI.text_style.NONE,
+};
+
+export const BG_TIME_TEXT = {
+  x: px(285),
+  y: px(100),
+  w: px(200),
+  h: px(50),
+  color: Colors.white,
+  text_size: px(20),
+  align_h: hmUI.align.LEFT,
+  align_v: hmUI.align.CENTER_V,
+  text_style: hmUI.text_style.NONE,
+};
+
+export const BG_TREND_IMAGE = {
+  x: px(100),
+  y: px(100),
+  src: "watchdrip/images/arrows/None.png",
 };
