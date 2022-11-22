@@ -5,6 +5,16 @@ export class StatusData {
         this.bat = bat;
     }
 
+    getUnitText(){
+        if (this.isMgdl == null){
+            return "";
+        }
+        if (this.isMgdl){
+            return "mg/dl";
+        }
+        return "mmol";
+    }
+
     static createEmpty() {
         return new StatusData(null, null, "");
     }

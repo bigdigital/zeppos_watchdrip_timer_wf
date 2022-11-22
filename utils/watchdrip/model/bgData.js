@@ -19,7 +19,7 @@ export class BgData {
     // }
 
     static createEmpty() {
-        return new BgData("10.5", "", "Flat", true, false, "1668975954793", true);
+        return new BgData("10.5", "13", "Flat", true, false, "1668975954793", true);
     }
 
     getArrowText() {
@@ -48,6 +48,6 @@ export class BgData {
         if (fileName === undefined || fileName === ""){
             fileName = "None";
         }
-        return `images/watchdrip/arrows/${fileName}.png`;
+        return `watchdrip/arrows/${fileName}.png`;
     }
 }

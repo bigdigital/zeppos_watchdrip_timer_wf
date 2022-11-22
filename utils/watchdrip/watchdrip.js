@@ -8,7 +8,7 @@ import {
     WF_INFO_LAST_UPDATE
 } from "../config/global-constants";
 import {json2str, str2json} from "../../shared/data";
-import {BG_TIME_TEXT, BG_TREND_IMAGE, BG_VALUE_TEXT} from "../config/styles";
+import {BG_DELTA_TEXT, BG_STALE_RECT, BG_TIME_TEXT, BG_TREND_IMAGE, BG_VALUE_TEXT} from "../config/styles";
 import {MessageBuilder} from "../../shared/message";
 import {
     Colors,
@@ -151,17 +151,11 @@ export class Watchdrip {
         this.lastUpdateAttempt = this.timeSensor.utc;
     }
 
-    //init watchdrip related widgets
-    initWidgets() {
-        this.bgValTextWidget = hmUI.createWidget(hmUI.widget.TEXT, BG_VALUE_TEXT);
-        this.bgValTimeTextWidget = hmUI.createWidget(hmUI.widget.TEXT, BG_TIME_TEXT);
-        this.bgTrendImageWidget = hmUI.createWidget(hmUI.widget.IMG, BG_TREND_IMAGE);
 
-        // this.drawGraph();
-    }
 
     //connect watch with side app
     initConnection() {
+        watchdrip.connectionActive = true;
         const appId = WATCHDRIP_APP_ID;
         messageBuilder = new MessageBuilder({appId});
         messageBuilder.connect();
@@ -170,7 +164,7 @@ export class Watchdrip {
     /*Callback which is called  when watchface is active  (visible)*/
     widgetDelegateCallbackResumeCall() {
         //debug.log("resume_call");
-        watchdrip.initConnection();
+        watchdrip.readInfo();
         watchdrip.updatingData = false;
         watchdrip.update();
     }
@@ -181,6 +175,17 @@ export class Watchdrip {
         watchdrip.stopDataUpdates();
         watchdrip.updatingData = false;
         messageBuilder.disConnect();
+        watchdrip.connectionActive = false;
+    }
+
+    //init watchdrip related widgets
+    initWidgets() {
+        this.bgValTextWidget = hmUI.createWidget(hmUI.widget.TEXT, BG_VALUE_TEXT);
+        this.bgValTimeTextWidget = hmUI.createWidget(hmUI.widget.TEXT, BG_TIME_TEXT);
+        this.bgDeltaTextWidget = hmUI.createWidget(hmUI.widget.TEXT, BG_DELTA_TEXT);
+        this.bgTrendImageWidget = hmUI.createWidget(hmUI.widget.IMG, BG_TREND_IMAGE);
+        this.bgStaleLine = hmUI.createWidget(hmUI.widget.FILL_RECT, BG_STALE_RECT);
+        // this.drawGraph();
     }
 
     updateWidgets() {
@@ -198,11 +203,16 @@ export class Watchdrip {
         }
 
         this.bgValTextWidget.setProperty(hmUI.prop.MORE, {
-            text: bgObj.getBGVal() + bgObj.getArrowText(),
+            text: bgObj.getBGVal(),
             color: bgValColor,
         });
 
+        this.bgDeltaTextWidget.setProperty(hmUI.prop.MORE, {
+            text: bgObj.delta
+        });
+
         this.bgTrendImageWidget.setProperty(hmUI.prop.SRC, bgObj.getArrowResource());
+        this.bgStaleLine.setProperty(hmUI.prop.VISIBLE, this.watchdripData.isBgStale());
     }
 
     updateTimesWidget() {
@@ -361,6 +371,11 @@ export class Watchdrip {
     fetchInfo() {
         this.lastUpdateAttempt = this.timeSensor.utc;
         this.lastUpdateSucessful = false;
+
+        if (!watchdrip.connectionActive) {
+            watchdrip.initConnection();
+        }
+
         debug.log("fetchInfo");
         if (messageBuilder.connectStatus() === false) {
             debug.log("No bt connection");
@@ -380,12 +395,12 @@ export class Watchdrip {
                 //debug.log(info);
                 try {
                     if (info.error) {
-                        debug.log("error:" + data.message);
+                        debug.log("error:" + info.message);
                         return;
                     }
-                    let data = str2json(info);
+                    let dataInfo = str2json(info);
 
-                    this.watchdripData.setData(data);
+                    this.watchdripData.setData(dataInfo);
                     this.watchdripData.updateTimeDiff();
 
                     this.lastInfoUpdate = this.saveInfo(info);

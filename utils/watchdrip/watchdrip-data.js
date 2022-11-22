@@ -16,7 +16,7 @@ export class WatchdripData {
         /** @var TreatmentData $object */
         this.treatment = TreatmentData.createEmpty();
         /** @var PumpData $object */
-        this.pump = null;
+        this.pump = PumpData.createEmpty();
         /* defines the difference in time between phone and watch*/
         this.timeDiff = 0;
     }
@@ -74,7 +74,7 @@ export class WatchdripData {
     }
 
     isBgStale() {
-        return this.getBg.isStale() || (this.timeSensor.utc - this.getBg().time - this.timeDiff) > BG_STALE_TIME_MS;
+        return this.getBg.isStale || (this.timeSensor.utc - this.getBg().time - this.timeDiff) > BG_STALE_TIME_MS;
     }
 
     getTimeAgo(time) {
