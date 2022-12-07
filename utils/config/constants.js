@@ -14,8 +14,9 @@ export const Commands = {
 
 export const Colors = {
     default:0xfc6950,
-    defaultTransparent:0xfeb4a8,
+    defaultTransparent:0xababab,
     white:0xffffff,
     bgHigh:0xffa0a0,
     bgLow:0x8bbbff,
+    accent:0xffbeff37,
 };

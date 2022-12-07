@@ -1,4 +1,121 @@
 import {Colors} from "./constants";
+import {img, range} from "../helper";
+
+let bgNumArr = range(10).map((v) => {
+    return img(`bgNum/${v}.png`);
+});
+
+let weekEnArray = range(1, 7).map((v) => {
+    return img(`week_en/${v}.png`);
+});
+
+let bigNumArr = range(10).map((v) => {
+    return img(`bigNum/${v}.png`);
+});
+
+let smallNumArr = range(10).map((v) => {
+    return img(`smallNum/${v}.png`);
+});
+
+let smallNumAccentArr = range(10).map((v) => {
+    return img(`smallNumAccent/${v}.png`);
+});
+
+export const DIGITAL_TIME_HOUR = {
+    hour_startX: px(134),
+    hour_startY: px(50),
+    hour_zero: true,
+    hour_space: 0,
+    hour_align: hmUI.align.CENTER_H,
+    hour_array: bigNumArr,
+};
+
+export const DIGITAL_TIME_MINUTES = {
+    minute_startX: px(250),
+    minute_startY: px(50),
+    minute_zero: true,
+    minute_space: 0,
+    minute_align: hmUI.align.CENTER_H,
+    minute_array: bigNumArr,
+};
+
+export const DIGITAL_TIME_SEPARATOR = {
+    x: px(232),
+    y: px(73),
+    src: img( `bigNum/sp.png`)
+};
+
+export const ANALOG_TIME_SECONDS = {
+    second_centerX: px(240),
+    second_centerY: px(240),
+    second_posX: px(6),
+    second_posY: px(233),
+    second_path: img("point/sec.png")
+};
+
+export const NORMAL_HEART_RATE_TEXT_IMG = {
+    x: px(105),
+    y: px(202),
+    padding: false,
+    h_space: 1,
+    align_h: hmUI.align.RIGHT,
+    type: hmUI.data_type.HEART,
+    show_level: hmUI.show_level.ONLY_NORMAL,
+    font_array: smallNumArr
+}
+
+export const NORMAL_STEPS_TEXT_IMG = {
+    x: px(316),
+    y: px(202),
+    w: px(133),
+    padding: false,
+    h_space: 1,
+    align_h: hmUI.align.CENTER_H,
+    type: hmUI.data_type.STEP,
+    show_level: hmUI.show_level.ONLY_NORMAL,
+    font_array: smallNumArr
+}
+
+export const NORMAL_DIST_TEXT_IMG = {
+    x: px(310),
+    y: px(252),
+    w: px(133),
+    padding: false,
+    h_space: 1,
+    align_h: hmUI.align.CENTER_H,
+    type: hmUI.data_type.DISTANCE,
+    unit_sc: img('smallNumAccent/km.png'),
+    unit_tc: img('smallNumAccent/km.png'),
+    unit_en: img('smallNumAccent/km.png'),
+    dot_image: img('smallNumAccent/d.png'),
+    show_level: hmUI.show_level.ONLY_NORMAL,
+    font_array: smallNumAccentArr
+}
+
+export const WEEK_DAYS = {
+    x: px(32),
+    y: px(251),
+    week_en: weekEnArray,
+    week_tc: weekEnArray,
+    week_sc: weekEnArray,
+}
+
+export const DAYS_TEXT_IMG = {
+    day_startX: px(115),
+    day_startY: px(252),
+    day_zero: 1,
+    day_space: 1,
+    day_align: hmUI.align.LEFT,
+    day_is_character: false,
+    day_sc_array: smallNumAccentArr,
+    day_tc_array: smallNumAccentArr,
+    day_en_array: smallNumAccentArr,
+}
+
+export const BATTERY_ARC = {
+    color: Colors.accent,
+    line_width: px(9)
+}
 
 export const DEBUG_TEXT = {
     x: px(30),
@@ -14,48 +131,61 @@ export const DEBUG_TEXT = {
     align_v: hmUI.align.TOP,
 };
 
-export const BG_VALUE_TEXT = {
-    x: px(50),
-    y: px(95),
-    w: px(150),
-    h: px(60),
+export const BG_VALUE_NO_DATA_TEXT = {
+    x: px(176),
+    y: px(160),
+    w: px(126),
+    h: px(55),
     color: Colors.white,
-    text_size: px(50),
+    text_size: px(45),
     align_h: hmUI.align.RIGHT,
     align_v: hmUI.align.CENTER_V,
     text_style: hmUI.text_style.NONE,
+    text: 'No data'
+};
+
+export const BG_VALUE_TEXT_IMG = {
+    x: px(176),
+    y: px(157),
+    w: px(126),
+    color: Colors.white,
+    align_h: hmUI.align.CENTER_H,
+    dot_image: img('bgNum/d.png'),
+    font_array: bgNumArr,
+    text: '0',
+    visible: false,
 };
 
 export const BG_TIME_TEXT = {
-    x: px(285),
-    y: px(130),
-    w: px(200),
-    h: px(25),
-    color: Colors.white,
-    text_size: px(20),
-    align_h: hmUI.align.LEFT,
-    align_v: hmUI.align.CENTER_V,
+    x: px(179),
+    y: px(302),
+    w: px(129),
+    h: px(32),
+    color: Colors.defaultTransparent,
+    text_size: px(26),
+    align_h: hmUI.align.CENTER_H,
+    align_v: hmUI.align.TOP,
     text_style: hmUI.text_style.NONE,
 };
 
 export const BG_DELTA_TEXT = {
-    x: px(285),
-    y: px(88),
-    w: px(200),
-    h: px(32),
-    color: Colors.white,
+    x: px(227),
+    y: px(257),
+    w: px(77),
+    h: px(35),
+    color: Colors.defaultTransparent,
     text_size: px(28),
     align_h: hmUI.align.LEFT,
-    align_v: hmUI.align.CENTER_V,
+    align_v: hmUI.align.TOP,
     text_style: hmUI.text_style.NONE,
 };
 
 export const BG_TREND_IMAGE = {
     src: 'watchdrip/arrows/None.png',
-    x: px(220),
-    y: px(110),
-    w: px(41),
-    h: px(39),
+    x: px(178),
+    y: px(253),
+    w: px(46),
+    h: px(48),
 };
 
 export const BG_STALE_RECT = {
@@ -64,5 +194,12 @@ export const BG_STALE_RECT = {
     w: px(120),
     h: px(4),
     color: Colors.white,
+    visible: false,
+};
+
+export const BG_STALE_IMG = {
+    x: px(197),
+    y: px(188),
+    src: 'watchdrip/stale.png',
     visible: false,
 };

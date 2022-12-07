@@ -8,7 +8,14 @@ import {
     WF_INFO_LAST_UPDATE
 } from "../config/global-constants";
 import {json2str, str2json} from "../../shared/data";
-import {BG_DELTA_TEXT, BG_STALE_RECT, BG_TIME_TEXT, BG_TREND_IMAGE, BG_VALUE_TEXT} from "../config/styles";
+import {
+    BG_DELTA_TEXT, BG_STALE_IMG,
+    BG_STALE_RECT,
+    BG_TIME_TEXT,
+    BG_TREND_IMAGE,
+    BG_VALUE_NO_DATA_TEXT,
+    BG_VALUE_TEXT_IMG
+} from "../config/styles";
 import {MessageBuilder} from "../../shared/message";
 import {
     Colors,
@@ -180,11 +187,13 @@ export class Watchdrip {
 
     //init watchdrip related widgets
     initWidgets() {
-        this.bgValTextWidget = hmUI.createWidget(hmUI.widget.TEXT, BG_VALUE_TEXT);
+        this.bgValTextWidget = hmUI.createWidget(hmUI.widget.TEXT, BG_VALUE_NO_DATA_TEXT);
+        this.bgValTextImgWidget = hmUI.createWidget(hmUI.widget.TEXT_IMG, BG_VALUE_TEXT_IMG);
         this.bgValTimeTextWidget = hmUI.createWidget(hmUI.widget.TEXT, BG_TIME_TEXT);
         this.bgDeltaTextWidget = hmUI.createWidget(hmUI.widget.TEXT, BG_DELTA_TEXT);
         this.bgTrendImageWidget = hmUI.createWidget(hmUI.widget.IMG, BG_TREND_IMAGE);
-        this.bgStaleLine = hmUI.createWidget(hmUI.widget.FILL_RECT, BG_STALE_RECT);
+        //this.bgStaleLine = hmUI.createWidget(hmUI.widget.FILL_RECT, BG_STALE_RECT);
+        this.bgStaleLine = hmUI.createWidget(hmUI.widget.IMG, BG_STALE_IMG);
         // this.drawGraph();
     }
 
@@ -201,11 +210,15 @@ export class Watchdrip {
         } else if (bgObj.isLow) {
             bgValColor = Colors.bgLow;
         }
-
-        this.bgValTextWidget.setProperty(hmUI.prop.MORE, {
-            text: bgObj.getBGVal(),
-            color: bgValColor,
-        });
+        let bgVal = bgObj.getBGVal();
+        if ( bgVal == "No data"){
+            this.bgValTextWidget.setProperty(hmUI.prop.VISIBLE, true);
+            this.bgValTextImgWidget.setProperty(hmUI.prop.VISIBLE, false);
+        } else {
+            this.bgValTextImgWidget.setProperty(hmUI.prop.TEXT,  bgVal );
+            this.bgValTextImgWidget.setProperty(hmUI.prop.VISIBLE, true);
+            this.bgValTextWidget.setProperty(hmUI.prop.VISIBLE, false);
+        }
 
         this.bgDeltaTextWidget.setProperty(hmUI.prop.MORE, {
             text: bgObj.delta
