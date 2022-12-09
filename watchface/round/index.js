@@ -1,12 +1,13 @@
 import {DebugText} from "../../shared/debug";
 import {Watchdrip} from "../../utils/watchdrip/watchdrip";
-import {img, range} from "../../utils/helper";
+import {img} from "../../utils/helper";
 import {
     ANALOG_TIME_SECONDS,
     DAYS_TEXT_IMG,
     DIGITAL_TIME_HOUR,
     DIGITAL_TIME_MINUTES,
     DIGITAL_TIME_SEPARATOR,
+    IMG_STATUS_BT_DISCONNECTED,
     NORMAL_DIST_TEXT_IMG,
     NORMAL_HEART_RATE_TEXT_IMG,
     NORMAL_STEPS_TEXT_IMG,
@@ -19,6 +20,7 @@ let digitalClockHour = null;
 let digitalClockMinutes = null;
 let digitalClockSeparator = null;
 let secondsPointer = null;
+let btDisconnected = null;
 
 let normalHeartRateTextImg = null;
 let normalStepsTextImg = null;
@@ -64,33 +66,35 @@ WatchFace({
             });
         }
 
-        digitalClockHour = hmUI.createWidget(hmUI.widget.IMG_TIME,  DIGITAL_TIME_HOUR );
+        digitalClockHour = hmUI.createWidget(hmUI.widget.IMG_TIME, DIGITAL_TIME_HOUR);
 
-        digitalClockMinutes = hmUI.createWidget(hmUI.widget.IMG_TIME,  DIGITAL_TIME_MINUTES );
+        digitalClockMinutes = hmUI.createWidget(hmUI.widget.IMG_TIME, DIGITAL_TIME_MINUTES);
 
         digitalClockSeparator = hmUI.createWidget(hmUI.widget.IMG, DIGITAL_TIME_SEPARATOR);
 
-        normalHeartRateTextImg = hmUI.createWidget(hmUI.widget.TEXT_IMG,  NORMAL_HEART_RATE_TEXT_IMG );
+        normalHeartRateTextImg = hmUI.createWidget(hmUI.widget.TEXT_IMG, NORMAL_HEART_RATE_TEXT_IMG);
 
-        normalStepsTextImg = hmUI.createWidget(hmUI.widget.TEXT_IMG,  NORMAL_STEPS_TEXT_IMG);
+        normalStepsTextImg = hmUI.createWidget(hmUI.widget.TEXT_IMG, NORMAL_STEPS_TEXT_IMG);
 
-        normalDistTextImg = hmUI.createWidget(hmUI.widget.TEXT_IMG,  NORMAL_DIST_TEXT_IMG);
+        normalDistTextImg = hmUI.createWidget(hmUI.widget.TEXT_IMG, NORMAL_DIST_TEXT_IMG);
 
-        weekImg = hmUI.createWidget(hmUI.widget.IMG_WEEK,  WEEK_DAYS );
+        weekImg = hmUI.createWidget(hmUI.widget.IMG_WEEK, WEEK_DAYS);
 
-        dateDayImg = hmUI.createWidget(hmUI.widget.IMG_DATE,  DAYS_TEXT_IMG );
+        dateDayImg = hmUI.createWidget(hmUI.widget.IMG_DATE, DAYS_TEXT_IMG);
 
         secondsPointer = hmUI.createWidget(hmUI.widget.TIME_POINTER, ANALOG_TIME_SECONDS);
 
-        batteryCircleArc = hmUI.createWidget(hmUI.widget.ARC);
+        btDisconnected = hmUI.createWidget(hmUI.widget.IMG_STATUS, IMG_STATUS_BT_DISCONNECTED);
 
+        batteryCircleArc = hmUI.createWidget(hmUI.widget.ARC);
         paiCircleArc = hmUI.createWidget(hmUI.widget.ARC);
+
         const battery = hmSensor.createSensor(hmSensor.id.BATTERY);
-        battery.addEventListener(hmSensor.event.CHANGE, function() {
+        battery.addEventListener(hmSensor.event.CHANGE, function () {
             scale_call();
         });
         const pai = hmSensor.createSensor(hmSensor.id.PAI);
-        pai.addEventListener(hmSensor.event.CHANGE, function() {
+        pai.addEventListener(hmSensor.event.CHANGE, function () {
             scale_call();
         });
 
@@ -105,13 +109,11 @@ WatchFace({
         function scale_call() {
             let valueBattery = battery.current;
             let targetBattery = 100;
-            let progressBattery = valueBattery/targetBattery;
+            let progressBattery = valueBattery / targetBattery;
             if (progressBattery > 1) progressBattery = 1;
             let progress_cs_normal_battery = progressBattery;
 
             if (screenType != hmSetting.screen_type.AOD) {
-
-                // batteryCircleArc
                 // initial parameters
                 let start_angle_normal_battery = -253;
                 let end_angle_normal_battery = -196;
@@ -143,13 +145,11 @@ WatchFace({
 
             let valuePAI = pai.totalpai;
             let targetPAI = 100;
-            let progressPAI = valuePAI/targetPAI;
+            let progressPAI = valuePAI / targetPAI;
             if (progressPAI > 1) progressPAI = 1;
             let progress_cs_normal_pai = progressPAI;
 
             if (screenType != hmSetting.screen_type.AOD) {
-
-                // paiCircleArc
                 // initial parameters
                 let start_angle_normal_pai = 73;
                 let end_angle_normal_pai = 16;

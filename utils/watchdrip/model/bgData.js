@@ -9,18 +9,24 @@ export class BgData {
         this.isStale = isStale;
     }
 
-    getBGVal(){
-        if (this.val === '') return "No data";
-        return this.val;
+    getBGVal() {
+        if (this.isHasData()) {
+            return this.val;
+        }
+        return '';
     }
 
-    // static createEmpty() {
-    //     return new BgData("", "", "", false, false, null, true);
-    // }
+    isHasData() {
+        return this.val !== ''
+    }
 
     static createEmpty() {
-        return new BgData("10.5", "13", "Flat", true, false, "1668975954793", true);
+        return new BgData("", "", "", false, false, null, true);
     }
+
+    /* static createEmpty() {
+         return new BgData("10.5", "13", "Flat", true, false, "1668975954793", false);
+     }*/
 
     getArrowText() {
         switch (this.trend) {
@@ -45,7 +51,7 @@ export class BgData {
 
     getArrowResource() {
         let fileName = this.trend;
-        if (fileName === undefined || fileName === ""){
+        if (fileName === undefined || fileName === "") {
             fileName = "None";
         }
         return `watchdrip/arrows/${fileName}.png`;

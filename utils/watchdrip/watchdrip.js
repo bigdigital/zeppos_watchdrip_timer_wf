@@ -9,12 +9,18 @@ import {
 } from "../config/global-constants";
 import {json2str, str2json} from "../../shared/data";
 import {
-    BG_DELTA_TEXT, BG_STALE_IMG,
-    BG_STALE_RECT,
+    BG_DELTA_TEXT,
+    BG_STALE_IMG,
+    BG_STATUS_HIGHT_IMG,
+    BG_STATUS_LOW_IMG,
+    BG_STATUS_OK_IMG,
     BG_TIME_TEXT,
     BG_TREND_IMAGE,
     BG_VALUE_NO_DATA_TEXT,
-    BG_VALUE_TEXT_IMG
+    BG_VALUE_TEXT_IMG,
+    IOB_TEXT,
+    PHONE_BATTERY_TEXT,
+    TREATMENT_TEXT
 } from "../config/styles";
 import {MessageBuilder} from "../../shared/message";
 import {
@@ -159,7 +165,6 @@ export class Watchdrip {
     }
 
 
-
     //connect watch with side app
     initConnection() {
         watchdrip.connectionActive = true;
@@ -194,6 +199,14 @@ export class Watchdrip {
         this.bgTrendImageWidget = hmUI.createWidget(hmUI.widget.IMG, BG_TREND_IMAGE);
         //this.bgStaleLine = hmUI.createWidget(hmUI.widget.FILL_RECT, BG_STALE_RECT);
         this.bgStaleLine = hmUI.createWidget(hmUI.widget.IMG, BG_STALE_IMG);
+        this.phoneBattery = hmUI.createWidget(hmUI.widget.TEXT, PHONE_BATTERY_TEXT);
+
+        this.iob = hmUI.createWidget(hmUI.widget.TEXT, IOB_TEXT);
+        this.treatment = hmUI.createWidget(hmUI.widget.TEXT, TREATMENT_TEXT);
+
+        this.bgStatusLow = hmUI.createWidget(hmUI.widget.IMG, BG_STATUS_LOW_IMG);
+        this.bgStatusOk = hmUI.createWidget(hmUI.widget.IMG, BG_STATUS_OK_IMG);
+        this.bgStatusHight = hmUI.createWidget(hmUI.widget.IMG, BG_STATUS_HIGHT_IMG);
         // this.drawGraph();
     }
 
@@ -203,35 +216,60 @@ export class Watchdrip {
     }
 
     updateValuesWidget() {
-        let bgValColor = Colors.white;
         let bgObj = this.watchdripData.getBg();
-        if (bgObj.isHigh) {
-            bgValColor = Colors.bgHigh;
-        } else if (bgObj.isLow) {
-            bgValColor = Colors.bgLow;
+
+        this.bgStatusLow.setProperty(hmUI.prop.VISIBLE, false);
+        this.bgStatusOk.setProperty(hmUI.prop.VISIBLE, false);
+        this.bgStatusHight.setProperty(hmUI.prop.VISIBLE, false);
+        if (bgObj.isHasData()) {
+            if (bgObj.isHigh) {
+                this.bgStatusHight.setProperty(hmUI.prop.VISIBLE, true);
+            } else if (bgObj.isLow) {
+                this.bgStatusLow.setProperty(hmUI.prop.VISIBLE, true);
+            } else {
+                this.bgStatusOk.setProperty(hmUI.prop.VISIBLE, true);
+            }
         }
-        let bgVal = bgObj.getBGVal();
-        if ( bgVal == "No data"){
-            this.bgValTextWidget.setProperty(hmUI.prop.VISIBLE, true);
-            this.bgValTextImgWidget.setProperty(hmUI.prop.VISIBLE, false);
-        } else {
-            this.bgValTextImgWidget.setProperty(hmUI.prop.TEXT,  bgVal );
+        if (bgObj.isHasData()) {
+            this.bgValTextImgWidget.setProperty(hmUI.prop.TEXT, bgObj.getBGVal());
             this.bgValTextImgWidget.setProperty(hmUI.prop.VISIBLE, true);
             this.bgValTextWidget.setProperty(hmUI.prop.VISIBLE, false);
+        } else {
+            this.bgValTextWidget.setProperty(hmUI.prop.VISIBLE, true);
+            this.bgValTextImgWidget.setProperty(hmUI.prop.VISIBLE, false);
         }
-
         this.bgDeltaTextWidget.setProperty(hmUI.prop.MORE, {
             text: bgObj.delta
         });
 
         this.bgTrendImageWidget.setProperty(hmUI.prop.SRC, bgObj.getArrowResource());
-        this.bgStaleLine.setProperty(hmUI.prop.VISIBLE, this.watchdripData.isBgStale());
+
+        this.phoneBattery.setProperty(hmUI.prop.MORE, {
+            text: this.watchdripData.getStatus().getBatVal()
+        });
+        let treatmentObj = this.watchdripData.getTreatment();
+        this.iob.setProperty(hmUI.prop.MORE, {
+            text: treatmentObj.getPredictIOB()
+        });
     }
 
     updateTimesWidget() {
         let bgObj = this.watchdripData.getBg();
         this.bgValTimeTextWidget.setProperty(hmUI.prop.MORE, {
             text: this.watchdripData.getTimeAgo(bgObj.time),
+        });
+
+        this.bgStaleLine.setProperty(hmUI.prop.VISIBLE, this.watchdripData.isBgStale());
+
+        let treatmentObj = this.watchdripData.getTreatment();
+
+        let treatmentsText = treatmentObj.getTreatments();
+        if (treatmentsText !== "") {
+            treatmentsText = treatmentsText + " " + this.watchdripData.getTimeAgo(treatmentObj.time);
+        }
+
+        this.treatment.setProperty(hmUI.prop.MORE, {
+            text: treatmentsText
         });
     }
 

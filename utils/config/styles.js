@@ -49,13 +49,14 @@ export const ANALOG_TIME_SECONDS = {
     second_centerX: px(240),
     second_centerY: px(240),
     second_posX: px(6),
-    second_posY: px(233),
+    second_posY: px(232),
     second_path: img("point/sec.png")
 };
 
 export const NORMAL_HEART_RATE_TEXT_IMG = {
-    x: px(105),
+    x: px(98),
     y: px(202),
+    w: px(63),
     padding: false,
     h_space: 1,
     align_h: hmUI.align.RIGHT,
@@ -77,31 +78,28 @@ export const NORMAL_STEPS_TEXT_IMG = {
 }
 
 export const NORMAL_DIST_TEXT_IMG = {
-    x: px(310),
+    x: px(313),
     y: px(252),
-    w: px(133),
+    w: px(90),
     padding: false,
     h_space: 1,
-    align_h: hmUI.align.CENTER_H,
+    align_h: hmUI.align.RIGHT,
     type: hmUI.data_type.DISTANCE,
-    unit_sc: img('smallNumAccent/km.png'),
-    unit_tc: img('smallNumAccent/km.png'),
-    unit_en: img('smallNumAccent/km.png'),
     dot_image: img('smallNumAccent/d.png'),
     show_level: hmUI.show_level.ONLY_NORMAL,
     font_array: smallNumAccentArr
 }
 
 export const WEEK_DAYS = {
-    x: px(32),
-    y: px(251),
+    x: px(37),
+    y: px(252),
     week_en: weekEnArray,
     week_tc: weekEnArray,
     week_sc: weekEnArray,
 }
 
 export const DAYS_TEXT_IMG = {
-    day_startX: px(115),
+    day_startX: px(126),
     day_startY: px(252),
     day_zero: 1,
     day_space: 1,
@@ -157,10 +155,10 @@ export const BG_VALUE_TEXT_IMG = {
 };
 
 export const BG_TIME_TEXT = {
-    x: px(179),
-    y: px(302),
-    w: px(129),
-    h: px(32),
+    x: px(175),
+    y: px(300),
+    w: px(130),
+    h: px(35),
     color: Colors.defaultTransparent,
     text_size: px(26),
     align_h: hmUI.align.CENTER_H,
@@ -169,20 +167,20 @@ export const BG_TIME_TEXT = {
 };
 
 export const BG_DELTA_TEXT = {
-    x: px(227),
-    y: px(257),
+    x: px(225),
+    y: px(249),
     w: px(77),
-    h: px(35),
+    h: px(40),
     color: Colors.defaultTransparent,
-    text_size: px(28),
-    align_h: hmUI.align.LEFT,
+    text_size: px(34),
+    align_h: hmUI.align.CENTER_H,
     align_v: hmUI.align.TOP,
     text_style: hmUI.text_style.NONE,
 };
 
 export const BG_TREND_IMAGE = {
     src: 'watchdrip/arrows/None.png',
-    x: px(178),
+    x: px(181),
     y: px(253),
     w: px(46),
     h: px(48),
@@ -198,8 +196,74 @@ export const BG_STALE_RECT = {
 };
 
 export const BG_STALE_IMG = {
-    x: px(197),
-    y: px(188),
+    x: px(194),
+    y: px(189),
     src: 'watchdrip/stale.png',
     visible: false,
+};
+
+
+export const IOB_TEXT = {
+    x: px(112),
+    y: px(353),
+    w: px(256),
+    h: px(30),
+    color: Colors.white,
+    text_size: px(24),
+    align_h: hmUI.align.CENTER_H,
+    align_v: hmUI.align.CENTER_V,
+    text_style: hmUI.text_style.NONE,
+};
+
+export const TREATMENT_TEXT = {
+    x: px(135),
+    y: px(384),
+    w: px(214),
+    h: px(30),
+    color: Colors.white,
+    text_size: px(24),
+    align_h: hmUI.align.CENTER_H,
+    align_v: hmUI.align.TOP,
+    text_style: hmUI.text_style.NONE,
+};
+
+export const PHONE_BATTERY_TEXT = {
+    x: px(343),
+    y: px(295),
+    w: px(80),
+    h: px(28),
+    color: Colors.white,
+    text_size: px(24),
+    align_h: hmUI.align.LEFT,
+    align_v: hmUI.align.TOP,
+    text_style: hmUI.text_style.NONE,
+};
+
+export const BG_STATUS_LOW_IMG = {
+    x: px(167),
+    y: px(143),
+    src: 'watchdrip/bgSatusLow.png',
+    visible: false,
+};
+
+export const BG_STATUS_OK_IMG = {
+    x: px(190),
+    y: px(143),
+    src: 'watchdrip/bgSatusOk.png',
+    visible: false,
+};
+
+export const BG_STATUS_HIGHT_IMG = {
+    x: px(293),
+    y: px(143),
+    src: 'watchdrip/bgSatusHight.png',
+    visible: false,
+};
+
+export const IMG_STATUS_BT_DISCONNECTED = {
+    x: px(124),
+    y: px(143),
+    src: img('status/bt_disconnect.png'),
+    type: hmUI.system_status.DISCONNECT,
+    show_level: hmUI.show_level.ONLY_NORMAL,
 };
