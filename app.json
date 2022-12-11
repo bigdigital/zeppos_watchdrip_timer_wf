@@ -2,13 +2,13 @@
   "configVersion": "v2",
   "app": {
     "appId": 20001,
-    "appName": "Timer",
+    "appName": "Watchdrip WF",
     "appType": "watchface",
     "version": {
       "code": 1,
       "name": "1.0.0"
     },
-    "vender": "zepp",
+    "vender": "bigdigital",
     "description": "timer watchface",
     "icon": "images/preview.png"
   },
