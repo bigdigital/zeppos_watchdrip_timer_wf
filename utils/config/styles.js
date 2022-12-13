@@ -258,7 +258,7 @@ export const TREATMENT_TEXT = {
 
 export const PHONE_BATTERY_TEXT = {
     x: px(343),
-    y: px(295),
+    y: px(292),
     w: px(80),
     h: px(28),
     color: Colors.white,
