@@ -39,6 +39,17 @@ export const DIGITAL_TIME_MINUTES = {
     minute_array: bigNumArr,
 };
 
+export const TIME_AM_PM = {
+    am_x: px(342),
+    am_y: px(98),
+    am_sc_path: img('bigNum/am.png'),
+    am_en_path: img('bigNum/am.png'),
+    pm_x: px(342),
+    pm_y: px(98),
+    pm_sc_path: img('bigNum/pm.png'),
+    pm_en_path: img('bigNum/pm.png'),
+}
+
 export const DIGITAL_TIME_SEPARATOR = {
     x: px(232),
     y: px(73),
@@ -111,8 +122,27 @@ export const DAYS_TEXT_IMG = {
 }
 
 export const BATTERY_ARC = {
+    x: px(23),
+    y: px(12),
+    w: px(444),
+    h: px(444),
+    start_angle: -253,
+    end_angle: -196,
     color: Colors.accent,
-    line_width: px(9)
+    line_width: px(9),
+    show_level: hmUI.show_level.ONLY_NORMAL,
+}
+
+export const PAI_ARC = {
+    x: px(11),
+    y: px(13),
+    w: px(444),
+    h: px(444),
+    start_angle: 73,
+    end_angle: 16,
+    color: Colors.accent,
+    line_width: px(9),
+    show_level: hmUI.show_level.ONLY_NORMAL,
 }
 
 export const DEBUG_TEXT = {
@@ -155,9 +185,9 @@ export const BG_VALUE_TEXT_IMG = {
 };
 
 export const BG_TIME_TEXT = {
-    x: px(175),
+    x: px(176),
     y: px(300),
-    w: px(130),
+    w: px(129),
     h: px(35),
     color: Colors.defaultTransparent,
     text_size: px(26),
@@ -180,7 +210,7 @@ export const BG_DELTA_TEXT = {
 
 export const BG_TREND_IMAGE = {
     src: 'watchdrip/arrows/None.png',
-    x: px(181),
+    x: px(183),
     y: px(253),
     w: px(46),
     h: px(48),
@@ -201,7 +231,6 @@ export const BG_STALE_IMG = {
     src: 'watchdrip/stale.png',
     visible: false,
 };
-
 
 export const IOB_TEXT = {
     x: px(112),
