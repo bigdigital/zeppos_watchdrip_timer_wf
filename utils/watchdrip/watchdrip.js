@@ -8,20 +8,6 @@ import {
     WF_INFO_LAST_UPDATE
 } from "../config/global-constants";
 import {json2str, str2json} from "../../shared/data";
-import {
-    BG_DELTA_TEXT,
-    BG_STALE_IMG,
-    BG_STATUS_HIGHT_IMG,
-    BG_STATUS_LOW_IMG,
-    BG_STATUS_OK_IMG,
-    BG_TIME_TEXT,
-    BG_TREND_IMAGE,
-    BG_VALUE_NO_DATA_TEXT,
-    BG_VALUE_TEXT_IMG,
-    IOB_TEXT,
-    PHONE_BATTERY_TEXT,
-    TREATMENT_TEXT
-} from "../config/styles";
 import {MessageBuilder} from "../../shared/message";
 import {
     Colors,
@@ -30,7 +16,7 @@ import {
     DATA_TIMER_UPDATE_INTERVAL_MS,
     DATA_UPDATE_INTERVAL_MS
 } from "../config/constants";
-import {debug, watchdrip} from "../../watchface/round";
+import {debug, watchdrip} from "../../watchface/gtr-3-pro";
 import {WatchdripData} from "./watchdrip-data";
 
 let {messageBuilder} = getApp()._options.globalData;
@@ -53,7 +39,6 @@ export class Watchdrip {
 
         this.intervalTimer = null;
         this.checkConfigUpdate();
-        //this.initWidgets();
         this.readInfo();
     }
 
@@ -190,24 +175,12 @@ export class Watchdrip {
         watchdrip.connectionActive = false;
     }
 
-    //init watchdrip related widgets
-    initWidgets() {
-        this.bgValTextWidget = hmUI.createWidget(hmUI.widget.TEXT, BG_VALUE_NO_DATA_TEXT);
-        this.bgValTextImgWidget = hmUI.createWidget(hmUI.widget.TEXT_IMG, BG_VALUE_TEXT_IMG);
-        this.bgValTimeTextWidget = hmUI.createWidget(hmUI.widget.TEXT, BG_TIME_TEXT);
-        this.bgDeltaTextWidget = hmUI.createWidget(hmUI.widget.TEXT, BG_DELTA_TEXT);
-        this.bgTrendImageWidget = hmUI.createWidget(hmUI.widget.IMG, BG_TREND_IMAGE);
-        //this.bgStaleLine = hmUI.createWidget(hmUI.widget.FILL_RECT, BG_STALE_RECT);
-        this.bgStaleLine = hmUI.createWidget(hmUI.widget.IMG, BG_STALE_IMG);
-        this.phoneBattery = hmUI.createWidget(hmUI.widget.TEXT, PHONE_BATTERY_TEXT);
+    setUpdateValueWidgetCallback(callback){
+        this.updateValueWidgetCallback = callback;
+    }
 
-        this.iob = hmUI.createWidget(hmUI.widget.TEXT, IOB_TEXT);
-        this.treatment = hmUI.createWidget(hmUI.widget.TEXT, TREATMENT_TEXT);
-
-        this.bgStatusLow = hmUI.createWidget(hmUI.widget.IMG, BG_STATUS_LOW_IMG);
-        this.bgStatusOk = hmUI.createWidget(hmUI.widget.IMG, BG_STATUS_OK_IMG);
-        this.bgStatusHight = hmUI.createWidget(hmUI.widget.IMG, BG_STATUS_HIGHT_IMG);
-        // this.drawGraph();
+    setUpdateTimesWidgetCallback(callback){
+        this.updateTimesWidgetCallback = callback;
     }
 
     updateWidgets() {
@@ -216,61 +189,15 @@ export class Watchdrip {
     }
 
     updateValuesWidget() {
-        let bgObj = this.watchdripData.getBg();
-
-        this.bgStatusLow.setProperty(hmUI.prop.VISIBLE, false);
-        this.bgStatusOk.setProperty(hmUI.prop.VISIBLE, false);
-        this.bgStatusHight.setProperty(hmUI.prop.VISIBLE, false);
-        if (bgObj.isHasData()) {
-            if (bgObj.isHigh) {
-                this.bgStatusHight.setProperty(hmUI.prop.VISIBLE, true);
-            } else if (bgObj.isLow) {
-                this.bgStatusLow.setProperty(hmUI.prop.VISIBLE, true);
-            } else {
-                this.bgStatusOk.setProperty(hmUI.prop.VISIBLE, true);
-            }
+        if (typeof this.updateValueWidgetCallback === "function"){
+            this.updateValueWidgetCallback(this.watchdripData);
         }
-        if (bgObj.isHasData()) {
-            this.bgValTextImgWidget.setProperty(hmUI.prop.TEXT, bgObj.getBGVal());
-            this.bgValTextImgWidget.setProperty(hmUI.prop.VISIBLE, true);
-            this.bgValTextWidget.setProperty(hmUI.prop.VISIBLE, false);
-        } else {
-            this.bgValTextWidget.setProperty(hmUI.prop.VISIBLE, true);
-            this.bgValTextImgWidget.setProperty(hmUI.prop.VISIBLE, false);
-        }
-        this.bgDeltaTextWidget.setProperty(hmUI.prop.MORE, {
-            text: bgObj.delta
-        });
-
-        this.bgTrendImageWidget.setProperty(hmUI.prop.SRC, bgObj.getArrowResource());
-
-        this.phoneBattery.setProperty(hmUI.prop.MORE, {
-            text: this.watchdripData.getStatus().getBatVal()
-        });
-        let treatmentObj = this.watchdripData.getTreatment();
-        this.iob.setProperty(hmUI.prop.MORE, {
-            text: treatmentObj.getPredictIOB()
-        });
     }
 
     updateTimesWidget() {
-        let bgObj = this.watchdripData.getBg();
-        this.bgValTimeTextWidget.setProperty(hmUI.prop.MORE, {
-            text: this.watchdripData.getTimeAgo(bgObj.time),
-        });
-
-        this.bgStaleLine.setProperty(hmUI.prop.VISIBLE, this.watchdripData.isBgStale());
-
-        let treatmentObj = this.watchdripData.getTreatment();
-
-        let treatmentsText = treatmentObj.getTreatments();
-        if (treatmentsText !== "") {
-            treatmentsText = treatmentsText + " " + this.watchdripData.getTimeAgo(treatmentObj.time);
+        if (typeof this.updateTimesWidgetCallback === "function"){
+            this.updateTimesWidgetCallback(this.watchdripData);
         }
-
-        this.treatment.setProperty(hmUI.prop.MORE, {
-            text: treatmentsText
-        });
     }
 
     drawGraph() {

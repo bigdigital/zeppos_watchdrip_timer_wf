@@ -1,5 +1,5 @@
-import {Colors} from "./constants";
-import {img, range} from "../helper";
+import {img,range} from "../../utils/helper";
+import {Colors} from "../../utils/config/constants";
 
 let bgNumArr = range(10).map((v) => {
     return img(`bgNum/${v}.png`);
@@ -144,20 +144,6 @@ export const PAI_ARC = {
     line_width: px(9),
     show_level: hmUI.show_level.ONLY_NORMAL,
 }
-
-export const DEBUG_TEXT = {
-    x: px(30),
-    y: px(80),
-    w: px(400),
-    h: px(450),
-    text_size: px(12),
-    char_space: 0,
-    color: Colors.white,
-    text: "",
-    text_style: hmUI.text_style.NONE,
-    align_h: hmUI.align.LEFT,
-    align_v: hmUI.align.TOP,
-};
 
 export const BG_VALUE_NO_DATA_TEXT = {
     x: px(176),

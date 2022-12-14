@@ -1,5 +1,6 @@
-import { DEBUG_TEXT } from "../utils/config/styles";
+
 import { zeroPad } from "./date";
+import {DEBUG_TEXT} from "../utils/config/styles_global";
 
 export class DebugText {
   constructor() {

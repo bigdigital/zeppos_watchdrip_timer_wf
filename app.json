@@ -44,6 +44,30 @@
         }
       ],
       "designWidth": 480
+    },
+    "falcon": {
+      "module": {
+        "watchface": {
+          "path": "watchface/falcon/index",
+          "main": 1,
+          "editable": 1,
+          "lockscreen": 1
+        },
+        "app-side": {
+          "path": "app-side/index"
+        }
+      },
+      "platforms": [
+        {
+          "name": "falcon1",
+          "deviceSource": 414
+        },
+        {
+          "name": "falcon2",
+          "deviceSource": 415
+        }
+      ],
+      "designWidth": 416
     }
   },
   "i18n": {
