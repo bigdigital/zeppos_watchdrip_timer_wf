@@ -24,7 +24,7 @@
     "gtr-3-pro": {
       "module": {
         "watchface": {
-          "path": "watchface/gtr-3-pro/index",
+          "path": "watchface/entry/gtr-3-pro/index",
           "main": 1,
           "editable": 1,
           "lockscreen": 1
@@ -48,7 +48,7 @@
     "falcon": {
       "module": {
         "watchface": {
-          "path": "watchface/falcon/index",
+          "path": "watchface/entry/falcon/index",
           "main": 1,
           "editable": 1,
           "lockscreen": 1

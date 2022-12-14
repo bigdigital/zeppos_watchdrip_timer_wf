@@ -1,7 +1,7 @@
 import {DebugText} from "../../shared/debug";
 import {Watchdrip} from "../../utils/watchdrip/watchdrip";
 import {WatchdripData} from "../../utils/watchdrip/watchdrip-data";
-import {img} from "../../utils/helper";
+import {getGlobal} from "../../shared/global";
 import {
     ANALOG_TIME_SECONDS,
     BATTERY_ARC,
@@ -29,6 +29,7 @@ import {
     TREATMENT_TEXT,
     WEEK_DAYS
 } from "./styles";
+import {BG_FILL_RECT, BG_IMG} from "../../utils/config/styles_global";
 
 let imgBg, digitalClockHour, digitalClockMinutes, timeAM_PM, digitalClockSeparator, secondsPointer, btDisconnected,
     normalHeartRateTextImg, normalStepsTextImg, normalDistTextImg, weekImg, dateDayImg, batteryCircleArc, paiCircleArc,
@@ -36,13 +37,15 @@ let imgBg, digitalClockHour, digitalClockMinutes, timeAM_PM, digitalClockSeparat
 let bgValTextWidget, bgValTextImgWidget, bgValTimeTextWidget, bgDeltaTextWidget, bgTrendImageWidget, bgStaleLine,
     phoneBattery, iob, treatment, bgStatusLow, bgStatusOk, bgStatusHight;
 
+let globalNS;
+
+let debug, watchdrip;
+
 export const logger = Logger.getLogger("timer-page");
 
-export let watchdrip = null;
-export let debug;
-
 function initDebug() {
-    debug = new DebugText();
+    globalNS.debug = new DebugText();
+    debug = globalNS.debug;
     debug.setLines(12);
 }
 
@@ -60,23 +63,10 @@ function getArcEndByVal(value, start_angle, end_angle) {
 WatchFace({
     initView() {
         screenType = hmSetting.getScreenType();
-        if (screenType == hmSetting.screen_type.AOD) {
-            imgBg = hmUI.createWidget(hmUI.widget.FILL_RECT, {
-                x: px(0),
-                y: px(0),
-                w: px(480),
-                h: px(480),
-                color: 0x000000,
-            });
+        if (screenType === hmSetting.screen_type.AOD) {
+            imgBg = hmUI.createWidget(hmUI.widget.FILL_RECT, BG_FILL_RECT);
         } else {
-            imgBg = hmUI.createWidget(hmUI.widget.IMG, {
-                x: px(0),
-                y: px(0),
-                w: px(480),
-                h: px(480),
-                src: img("bg/bg.png"),
-                show_level: hmUI.show_level.ONLY_NORMAL,
-            });
+            imgBg = hmUI.createWidget(hmUI.widget.IMG, BG_IMG);
         }
 
         digitalClockHour = hmUI.createWidget(hmUI.widget.IMG_TIME, DIGITAL_TIME_HOUR);
@@ -106,17 +96,17 @@ WatchFace({
 
         const battery = hmSensor.createSensor(hmSensor.id.BATTERY);
         battery.addEventListener(hmSensor.event.CHANGE, function () {
-            this.scale_call();
+            scale_call();
         });
         const pai = hmSensor.createSensor(hmSensor.id.PAI);
         pai.addEventListener(hmSensor.event.CHANGE, function () {
-            this.scale_call();
+            scale_call();
         });
 
         const widgetDelegate = hmUI.createWidget(hmUI.widget.WIDGET_DELEGATE, {
             resume_call: (function () {
                 screenType = hmSetting.getScreenType();
-                this.scale_call();
+                scale_call();
             }),
         });
 
@@ -134,19 +124,20 @@ WatchFace({
         bgStatusLow = hmUI.createWidget(hmUI.widget.IMG, BG_STATUS_LOW_IMG);
         bgStatusOk = hmUI.createWidget(hmUI.widget.IMG, BG_STATUS_OK_IMG);
         bgStatusHight = hmUI.createWidget(hmUI.widget.IMG, BG_STATUS_HIGHT_IMG);
-    },
 
-
-    scale_call() {
-        if (screenType !== hmSetting.screen_type.AOD) {
-            batteryCircleArc.setProperty(hmUI.prop.MORE, getArcEndByVal(battery.current, BATTERY_ARC.start_angle, BATTERY_ARC.end_angle))
-            paiCircleArc.setProperty(hmUI.prop.MORE, getArcEndByVal(pai.totalpai, PAI_ARC.start_angle, PAI_ARC.end_angle))
+        function scale_call() {
+            if (screenType !== hmSetting.screen_type.AOD) {
+                batteryCircleArc.setProperty(hmUI.prop.MORE, getArcEndByVal(battery.current, BATTERY_ARC.start_angle, BATTERY_ARC.end_angle))
+                paiCircleArc.setProperty(hmUI.prop.MORE, getArcEndByVal(pai.totalpai, PAI_ARC.start_angle, PAI_ARC.end_angle))
+            }
         }
     },
+
     /**
      * @param {WatchdripData} watchdripData The watchdrip data info
      */
     updateValuesWidget(watchdripData) {
+        if (watchdripData == undefined) return;
         let bgObj = watchdripData.getBg();
 
         bgStatusLow.setProperty(hmUI.prop.VISIBLE, false);
@@ -183,10 +174,12 @@ WatchFace({
             text: treatmentObj.getPredictIOB()
         });
     },
+
     /**
      * @param {WatchdripData} watchdripData The watchdrip data info
      */
     updateTimesWidget(watchdripData) {
+        if (watchdripData === undefined) return;
         let bgObj = watchdripData.getBg();
         bgValTimeTextWidget.setProperty(hmUI.prop.MORE, {
             text: watchdripData.getTimeAgo(bgObj.time),
@@ -212,12 +205,14 @@ WatchFace({
 
     build() {
         logger.log("wf on build invoke");
-        watchdrip = new Watchdrip();
-        watchdrip.setUpdateValueWidgetCallback(this.updateValuesWidget);
-        watchdrip.setUpdateTimesWidgetCallback(this.updateTimesWidget);
-        this.initView();
+        globalNS = getGlobal();
         initDebug();
         debug.log("build");
+        this.initView();
+        globalNS.watchdrip = new Watchdrip();
+        watchdrip = globalNS.watchdrip;
+        watchdrip.setUpdateValueWidgetCallback(this.updateValuesWidget);
+        watchdrip.setUpdateTimesWidgetCallback(this.updateTimesWidget);
         watchdrip.start();
     },
 

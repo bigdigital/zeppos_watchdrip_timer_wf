@@ -16,19 +16,20 @@ import {
     DATA_TIMER_UPDATE_INTERVAL_MS,
     DATA_UPDATE_INTERVAL_MS
 } from "../config/constants";
-import {debug, watchdrip} from "../../watchface/gtr-3-pro";
 import {WatchdripData} from "./watchdrip-data";
 
 let {messageBuilder} = getApp()._options.globalData;
 
 export const logger = Logger.getLogger("wf-wathchdrip");
 
+let watchdrip, debug
 
 export class Watchdrip {
     constructor() {
+        this.globalNS = getGlobal();
+        debug = this.globalNS.debug;
         this.timeSensor = hmSensor.createSensor(hmSensor.id.TIME);
         this.watchdripData = new WatchdripData(this.timeSensor);
-        this.globalNS = getGlobal();
 
         this.system_alarm_id = null;
         this.lastInfoUpdate = 0;
@@ -42,13 +43,15 @@ export class Watchdrip {
         this.readInfo();
     }
 
-    start() {
+    start() { 
+        watchdrip = this.globalNS.watchdrip;
         this.updateValuesWidget();
         //Monitor watchface activity in order to recreate connection
         hmUI.createWidget(hmUI.widget.WIDGET_DELEGATE, {
-            resume_call: this.widgetDelegateCallbackResumeCall,
-            pause_call: this.widgetDelegateCallbackPauseCall,
-        })
+            resume_call: watchdrip.widgetDelegateCallbackResumeCall,
+            pause_call: watchdrip.widgetDelegateCallbackPauseCall,
+        });
+        //this.update();
     }
 
     startDataUpdates() {
@@ -124,7 +127,7 @@ export class Watchdrip {
 
     update() {
         this.checkConfigUpdate();
-        //debug.log(this.watchdripConfig)
+        debug.log(this.watchdripConfig)
         // debug.enabled = this.watchdripConfig.showLog
         if (this.watchdripConfig.disableUpdates === true) {
             this.stopDataUpdates();
@@ -160,10 +163,13 @@ export class Watchdrip {
 
     /*Callback which is called  when watchface is active  (visible)*/
     widgetDelegateCallbackResumeCall() {
-        //debug.log("resume_call");
+        debug.log("resume_call");
+        logger.log("resume_call");
         watchdrip.readInfo();
         watchdrip.updatingData = false;
         watchdrip.update();
+        debug.log("resume_callend");
+        logger.log("resume_callend");
     }
 
     /*Callback which is called  when watchface deactivating (not visible)*/

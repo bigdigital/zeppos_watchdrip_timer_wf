@@ -1,7 +1,6 @@
 import {img,range} from "../../utils/helper";
 import {Colors} from "../../utils/config/constants";
 
-
 let bgNumArr = range(10).map((v) => {
     return img(`bgNum/${v}.png`);
 });
