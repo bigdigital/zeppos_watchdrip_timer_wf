@@ -168,6 +168,7 @@ export const BG_VALUE_TEXT_IMG = {
     font_array: bgNumArr,
     text: '0',
     visible: false,
+    h_space:1
 };
 
 export const BG_TIME_TEXT = {
@@ -257,21 +258,21 @@ export const PHONE_BATTERY_TEXT = {
 export const BG_STATUS_LOW_IMG = {
     x: px(167),
     y: px(143),
-    src: 'watchdrip/bgSatusLow.png',
+    src: 'watchdrip/bgLow.png',
     visible: false,
 };
 
 export const BG_STATUS_OK_IMG = {
     x: px(190),
     y: px(143),
-    src: 'watchdrip/bgSatusOk.png',
+    src: 'watchdrip/bgOk.png',
     visible: false,
 };
 
 export const BG_STATUS_HIGHT_IMG = {
     x: px(293),
     y: px(143),
-    src: 'watchdrip/bgSatusHight.png',
+    src: 'watchdrip/bgHight.png',
     visible: false,
 };
 
