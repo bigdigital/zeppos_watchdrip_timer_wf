@@ -283,3 +283,13 @@ export const IMG_STATUS_BT_DISCONNECTED = {
     type: hmUI.system_status.DISCONNECT,
     show_level: hmUI.show_level.ONLY_NORMAL,
 };
+
+export const IMG_LOADING_PROGRESS = {
+    x: px(124),
+    y: px(143),
+    src: 'watchdrip/progress.png',
+    angle:0,
+    center_x: 20,
+    center_y: 20,
+    visible: false,
+};

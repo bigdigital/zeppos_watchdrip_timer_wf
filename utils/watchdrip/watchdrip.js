@@ -127,7 +127,7 @@ export class Watchdrip {
 
     update() {
         this.checkConfigUpdate();
-        debug.log(this.watchdripConfig)
+       // debug.log(this.watchdripConfig)
         // debug.enabled = this.watchdripConfig.showLog
         if (this.watchdripConfig.disableUpdates === true) {
             this.stopDataUpdates();
@@ -177,6 +177,9 @@ export class Watchdrip {
         //debug.log("pause_call");
         watchdrip.stopDataUpdates();
         watchdrip.updatingData = false;
+        if (typeof watchdrip.onUpdateFinishCallback === "function"){
+            watchdrip.onUpdateFinishCallback(watchdrip.lastUpdateSucessful);
+        }
         messageBuilder.disConnect();
         watchdrip.connectionActive = false;
     }
@@ -187,6 +190,14 @@ export class Watchdrip {
 
     setUpdateTimesWidgetCallback(callback){
         this.updateTimesWidgetCallback = callback;
+    }
+
+    setOnUpdateStartCallback(callback){
+        this.onUpdateStartCallback = callback;
+    }
+
+    setOnUpdateFinishCallback(callback){
+        this.onUpdateFinishCallback = callback;
     }
 
     updateWidgets() {
@@ -207,149 +218,6 @@ export class Watchdrip {
     }
 
     drawGraph() {
-        // const lineDatas = [
-        //   { x: 0, y: 0 },
-        //   { x: 100, y: 10, color: 0xfc6950 },
-        //   { x: 200, y: 50, color: 0x1ad9cc },
-        //   { x: 100, y: 2, item_color: 0x1ad9cc, item_width: 11},
-        //   { x: 300, y: 50, width: 10 },
-        // ];
-
-        let pointWidth = 2;
-
-        var widget = hmUI.createWidget(hmUI.widget.GRADKIENT_POLYLINE, {
-            x: 0,
-            y: 200,
-            w: 480,
-            h: 200,
-            line_color: 0xfc6950, // ok
-            line_width: pointWidth, // ok
-            //type: 39, //spec val 5 , 27
-        });
-        var hLine = hmUI.createWidget(hmUI.widget.GRADKIENT_POLYLINE, {
-            x: 0,
-            y: 300,
-            w: 480,
-            h: 200,
-            line_color: 0xBF0B0B, // ok
-            line_width: pointWidth, // ok
-            //type: 39, //spec val 5 , 27
-        });
-        var lLine = hmUI.createWidget(hmUI.widget.GRADKIENT_POLYLINE, {
-            x: 0,
-            y: 350,
-            w: 480,
-            h: 200,
-            line_color: 0x008000, // ok
-            line_width: pointWidth, // ok
-            //type: 39, //spec val 5 , 27
-        });
-
-        widget.clear(); //clear the canvas
-        // widget.addLine({
-        // //   //Add line.
-        //   data: lineDatas,
-        //   count: lineDatas.length,
-        //    line_color: 0x1ad9cc,
-        //     item_color: 0x1ad9cc,
-        //     color: 0x1ad9cc,
-        //     item_width: 11,
-        //     configs: {
-        //         colors: [0x000000, 0xffffff],
-        //         color_stops:1,
-        //         color_count:2
-        //     }
-        // });
-
-        let points = [];
-        let xfinal = 480 - pointWidth;
-        let yfinal = 200 - pointWidth;
-        let pointIncrement = pointWidth + 4
-        for (let x = pointWidth / 2; x < xfinal; x = x + pointIncrement) {
-            for (let y = pointWidth / 2; y < yfinal; y = y + pointIncrement) {
-                // getRandomInt(10, 199)
-                let point = {x: x, y: y}
-                //logger.log("x:" + point[0].x + " y:" + point[0].y)
-                points.push(point)
-            }
-        }
-
-        widget.addPoint({
-            data: points,
-            count: points.length,
-        })
-
-        let linePoints = [{x: 0, y: 50}, {x: 480, y: 50}];
-        hLine.addLine({
-                data: linePoints,
-                count: linePoints.length
-            }
-        )
-
-        lLine.addLine({
-                data: linePoints,
-                count: linePoints.length
-            }
-        )
-
-        /*
-        hmUI.createWidget(hmUI.widget.HISTOGRAM, {
-						x: (s - n(400)) / 2,
-						y: 120,
-						h: 300,
-						w: 400,
-						item_width: 11,
-						item_space: 5,
-						item_radius: 10,
-						item_start_y: 50,
-						item_max_height: 230,
-						item_color: m < 0 ? this.state.red : this.state.green,
-						data_array: o,
-						data_count: 24,
-						data_min_value: g - 100,
-						data_max_value: c + 100,
-						xline: {
-							pading: 20,
-							space: 20,
-							start: 0,
-							end: 300,
-							color: this.state.black,
-							width: 1,
-							count: 15
-						},
-						yline: {
-							pading: 10,
-							space: 10,
-							start: 0,
-							end: 300,
-							color: this.state.black,
-							width: 1,
-							count: 30
-						},
-						xText: {
-							x: 12,
-							y: 270,
-							w: 20,
-							h: 50,
-							space: 10,
-							align: hmUI.align.LEFT,
-							color: this.state.black,
-							count: 24,
-							data_array: o
-						},
-						yText: {
-							x: 0,
-							y: 20,
-							w: 50,
-							h: 50,
-							space: 10,
-							align: hmUI.align.LEFT,
-							color: this.state.black,
-							count: 5,
-							data_array: []
-						}
-					}
-         */
     }
 
     fetchInfo() {
@@ -367,6 +235,10 @@ export class Watchdrip {
         }
         // debug.log("bt connection ok");
         this.updatingData = true;
+        if (typeof this.onUpdateStartCallback === "function"){
+            this.onUpdateStartCallback();
+        }
+
         messageBuilder
             .request({
                 method: Commands.getInfo,
@@ -399,6 +271,9 @@ export class Watchdrip {
             })
             .finally(() => {
                 this.updatingData = false;
+                if (typeof this.onUpdateFinishCallback === "function"){
+                    this.onUpdateFinishCallback(this.lastUpdateSucessful);
+                }
             });
     }
 

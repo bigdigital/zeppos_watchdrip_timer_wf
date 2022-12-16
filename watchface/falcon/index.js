@@ -18,6 +18,7 @@ import {
     DIGITAL_TIME_HOUR,
     DIGITAL_TIME_MINUTES,
     DIGITAL_TIME_SEPARATOR,
+    IMG_LOADING_PROGRESS,
     IMG_STATUS_BT_DISCONNECTED,
     IOB_TEXT,
     NORMAL_DIST_TEXT_IMG,
@@ -30,14 +31,15 @@ import {
     WEEK_DAYS
 } from "./styles";
 import {BG_FILL_RECT, BG_IMG} from "../../utils/config/styles_global";
+import {PROGRESS_ANGLE_INC, PROGRESS_UPDATE_INTERVAL_MS} from "../../utils/config/constants";
 
 let imgBg, digitalClockHour, digitalClockMinutes, timeAM_PM, digitalClockSeparator, secondsPointer, btDisconnected,
     normalHeartRateTextImg, normalStepsTextImg, normalDistTextImg, weekImg, dateDayImg, batteryCircleArc, paiCircleArc,
     screenType;
 let bgValTextWidget, bgValTextImgWidget, bgValTimeTextWidget, bgDeltaTextWidget, bgTrendImageWidget, bgStaleLine,
-    phoneBattery, iob, treatment, bgStatusLow, bgStatusOk, bgStatusHight;
+    phoneBattery, iob, treatment, bgStatusLow, bgStatusOk, bgStatusHight, progress;
 
-let globalNS;
+let globalNS, progressTimer, progressAngle;
 
 let debug, watchdrip;
 
@@ -58,6 +60,29 @@ function getArcEndByVal(value, start_angle, end_angle) {
     return {
         end_angle: end_angle_draw
     }
+}
+
+function startLoader() {
+    progress.setProperty(hmUI.prop.VISIBLE, true);
+    progressAngle = 0;
+    progress.setProperty(hmUI.prop.MORE, {angle: progressAngle});
+    progressTimer = globalNS.setInterval(() => {
+        updateLoader();
+    }, PROGRESS_UPDATE_INTERVAL_MS);
+}
+
+function updateLoader() {
+    progressAngle = progressAngle + PROGRESS_ANGLE_INC;
+    if (progressAngle >= 360) progressAngle = 0;
+    progress.setProperty(hmUI.prop.MORE, {angle: progressAngle});
+}
+
+function stopLoader() {
+    if (progressTimer !== null) {
+        globalNS.clearInterval(progressTimer);
+        progressTimer = null;
+    }
+    progress.setProperty(hmUI.prop.VISIBLE, false);
 }
 
 WatchFace({
@@ -107,7 +132,7 @@ WatchFace({
             resume_call: (function () {
                 screenType = hmSetting.getScreenType();
                 scale_call();
-            }),
+            })
         });
 
         //init watchdrip related widgets
@@ -124,6 +149,7 @@ WatchFace({
         bgStatusLow = hmUI.createWidget(hmUI.widget.IMG, BG_STATUS_LOW_IMG);
         bgStatusOk = hmUI.createWidget(hmUI.widget.IMG, BG_STATUS_OK_IMG);
         bgStatusHight = hmUI.createWidget(hmUI.widget.IMG, BG_STATUS_HIGHT_IMG);
+        progress = hmUI.createWidget(hmUI.widget.IMG, IMG_LOADING_PROGRESS);
 
         function scale_call() {
             if (screenType !== hmSetting.screen_type.AOD) {
@@ -131,6 +157,14 @@ WatchFace({
                 paiCircleArc.setProperty(hmUI.prop.MORE, getArcEndByVal(pai.totalpai, PAI_ARC.start_angle, PAI_ARC.end_angle))
             }
         }
+    },
+    updateStart() {
+        bgValTimeTextWidget.setProperty(hmUI.prop.VISIBLE, false);
+        startLoader();
+    },
+    updateFinish(isSuccess) {
+        stopLoader();
+        bgValTimeTextWidget.setProperty(hmUI.prop.VISIBLE, true);
     },
 
     /**
@@ -213,6 +247,8 @@ WatchFace({
         watchdrip = globalNS.watchdrip;
         watchdrip.setUpdateValueWidgetCallback(this.updateValuesWidget);
         watchdrip.setUpdateTimesWidgetCallback(this.updateTimesWidget);
+        watchdrip.setOnUpdateStartCallback(this.updateStart);
+        watchdrip.setOnUpdateFinishCallback(this.updateFinish);
         watchdrip.start();
     },
 

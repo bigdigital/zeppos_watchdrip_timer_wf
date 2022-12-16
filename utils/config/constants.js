@@ -12,6 +12,9 @@ export const Commands = {
     getImg: "CMD_GET_IMG",
 };
 
+export const PROGRESS_UPDATE_INTERVAL_MS = 100;
+export const PROGRESS_ANGLE_INC = 30;
+
 export const Colors = {
     default:0xfc6950,
     defaultTransparent:0xababab,
@@ -21,3 +24,5 @@ export const Colors = {
     bgLow:0x8bbbff,
     accent:0xffbeff37,
 };
+
+export const TEST_DATA = true;
