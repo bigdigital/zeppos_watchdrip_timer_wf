@@ -1,3 +1,5 @@
+import {TEST_DATA} from "../../config/constants";
+
 export class TreatmentData {
     constructor(insulin, carbs, time, predictIOB, predictWPB) {
         this.insulin = insulin;
@@ -36,11 +38,10 @@ export class TreatmentData {
     }
 
 
-    /*static createEmpty() {
-        return new TreatmentData("10", "20", 1668975954793, "10u" ,"20u");
-    }*/
-
     static createEmpty() {
+        if (TEST_DATA){
+            return new TreatmentData("10", "20", 1668975954793, "10u" ,"20u");
+        }
         return new TreatmentData("", "", null, "", "");
     }
 }

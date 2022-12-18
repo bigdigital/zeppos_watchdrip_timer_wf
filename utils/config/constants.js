@@ -25,4 +25,5 @@ export const Colors = {
     accent:0xffbeff37,
 };
 
-export const TEST_DATA = true;
+/*set to true on wf creation*/
+export const TEST_DATA = false;

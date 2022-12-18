@@ -1,3 +1,5 @@
+import {TEST_DATA} from "../../config/constants";
+
 export class BgData {
     constructor(val, delta, trend, isHigh, isLow, time, isStale) {
         this.val = val;
@@ -21,12 +23,11 @@ export class BgData {
     }
 
     static createEmpty() {
+        if (TEST_DATA){
+            return new BgData("10.5", "+13.2", "Flat", true, false, "1668975954793", false);
+        }
         return new BgData("", "", "", false, false, null, true);
     }
-
-    /* static createEmpty() {
-         return new BgData("10.5", "13", "Flat", true, false, "1668975954793", false);
-     }*/
 
     getArrowText() {
         switch (this.trend) {

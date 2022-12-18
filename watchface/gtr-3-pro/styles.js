@@ -5,7 +5,7 @@ let bgNumArr = range(10).map((v) => {
     return img(`bgNum/${v}.png`);
 });
 
-let weekEnArray = range(1, 7).map((v) => {
+let weekEnArray = range(1, 8).map((v) => {
     return img(`week_en/${v}.png`);
 });
 
@@ -22,10 +22,10 @@ let smallNumAccentArr = range(10).map((v) => {
 });
 
 export const DIGITAL_TIME_HOUR = {
-    hour_startX: px(134),
+    hour_startX: px(137),
     hour_startY: px(50),
     hour_zero: true,
-    hour_space: 0,
+    hour_space: 2,
     hour_align: hmUI.align.CENTER_H,
     hour_array: bigNumArr,
 };
@@ -34,7 +34,7 @@ export const DIGITAL_TIME_MINUTES = {
     minute_startX: px(250),
     minute_startY: px(50),
     minute_zero: true,
-    minute_space: 0,
+    minute_space: 2,
     minute_align: hmUI.align.CENTER_H,
     minute_array: bigNumArr,
 };
@@ -127,7 +127,6 @@ export const BATTERY_ARC = {
     w: px(444),
     h: px(444),
     start_angle: -253,
-    end_angle: -196,
     color: Colors.accent,
     line_width: px(9),
     show_level: hmUI.show_level.ONLY_NORMAL,
@@ -139,7 +138,6 @@ export const PAI_ARC = {
     w: px(444),
     h: px(444),
     start_angle: 73,
-    end_angle: 16,
     color: Colors.accent,
     line_width: px(9),
     show_level: hmUI.show_level.ONLY_NORMAL,
