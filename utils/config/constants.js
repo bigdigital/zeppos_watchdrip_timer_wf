@@ -26,4 +26,4 @@ export const Colors = {
 };
 
 /*set to true on wf creation*/
-export const TEST_DATA = true;
+export const TEST_DATA = false;

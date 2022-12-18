@@ -212,9 +212,9 @@ WatchFace({
         });
 
         if (TEST_DATA){
-            bgStatusLow.setProperty(hmUI.prop.VISIBLE, true);
-            bgStatusOk.setProperty(hmUI.prop.VISIBLE, true);
-            bgStatusHight.setProperty(hmUI.prop.VISIBLE, true);
+            // bgStatusLow.setProperty(hmUI.prop.VISIBLE, true);
+            // bgStatusOk.setProperty(hmUI.prop.VISIBLE, true);
+            // bgStatusHight.setProperty(hmUI.prop.VISIBLE, true);
             bgValTimeTextWidget.setProperty(hmUI.prop.VISIBLE, true);
         }
     },

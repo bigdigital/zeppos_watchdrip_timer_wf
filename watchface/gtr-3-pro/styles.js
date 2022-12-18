@@ -40,11 +40,11 @@ export const DIGITAL_TIME_MINUTES = {
 };
 
 export const TIME_AM_PM = {
-    am_x: px(342),
+    am_x: px(344),
     am_y: px(98),
     am_sc_path: img('bigNum/am.png'),
     am_en_path: img('bigNum/am.png'),
-    pm_x: px(342),
+    pm_x: px(344),
     pm_y: px(98),
     pm_sc_path: img('bigNum/pm.png'),
     pm_en_path: img('bigNum/pm.png'),
@@ -127,6 +127,7 @@ export const BATTERY_ARC = {
     w: px(444),
     h: px(444),
     start_angle: -253,
+    end_angle: -196,
     color: Colors.accent,
     line_width: px(9),
     show_level: hmUI.show_level.ONLY_NORMAL,
@@ -138,6 +139,7 @@ export const PAI_ARC = {
     w: px(444),
     h: px(444),
     start_angle: 73,
+    end_angle: 16,
     color: Colors.accent,
     line_width: px(9),
     show_level: hmUI.show_level.ONLY_NORMAL,
@@ -182,9 +184,9 @@ export const BG_TIME_TEXT = {
 };
 
 export const BG_DELTA_TEXT = {
-    x: px(225),
+    x: px(226),
     y: px(249),
-    w: px(77),
+    w: px(76),
     h: px(40),
     color: Colors.defaultTransparent,
     text_size: px(34),
@@ -195,7 +197,7 @@ export const BG_DELTA_TEXT = {
 
 export const BG_TREND_IMAGE = {
     src: 'watchdrip/arrows/None.png',
-    x: px(183),
+    x: px(181),
     y: px(253),
     w: px(46),
     h: px(48),
@@ -219,21 +221,21 @@ export const BG_STALE_IMG = {
 
 export const IOB_TEXT = {
     x: px(112),
-    y: px(353),
+    y: px(351),
     w: px(256),
-    h: px(30),
+    h: px(34),
     color: Colors.white,
     text_size: px(24),
     align_h: hmUI.align.CENTER_H,
-    align_v: hmUI.align.CENTER_V,
+    align_v: hmUI.align.TOP,
     text_style: hmUI.text_style.NONE,
 };
 
 export const TREATMENT_TEXT = {
     x: px(135),
-    y: px(384),
+    y: px(382),
     w: px(214),
-    h: px(30),
+    h: px(34),
     color: Colors.white,
     text_size: px(24),
     align_h: hmUI.align.CENTER_H,
@@ -245,9 +247,9 @@ export const PHONE_BATTERY_TEXT = {
     x: px(343),
     y: px(292),
     w: px(80),
-    h: px(28),
+    h: px(36),
     color: Colors.white,
-    text_size: px(24),
+    text_size: px(26),
     align_h: hmUI.align.LEFT,
     align_v: hmUI.align.TOP,
     text_style: hmUI.text_style.NONE,
