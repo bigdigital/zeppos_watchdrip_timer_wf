@@ -31,7 +31,7 @@ import {
     WEEK_DAYS
 } from "./styles";
 import {BG_FILL_RECT, BG_IMG} from "../../utils/config/styles_global";
-import {PROGRESS_ANGLE_INC, PROGRESS_UPDATE_INTERVAL_MS} from "../../utils/config/constants";
+import {PROGRESS_ANGLE_INC, PROGRESS_UPDATE_INTERVAL_MS, TEST_DATA} from "../../utils/config/constants";
 
 let imgBg, digitalClockHour, digitalClockMinutes, timeAM_PM, digitalClockSeparator, secondsPointer, btDisconnected,
     normalHeartRateTextImg, normalStepsTextImg, normalDistTextImg, weekImg, dateDayImg, batteryCircleArc, paiCircleArc,
@@ -173,12 +173,13 @@ WatchFace({
      * @param {WatchdripData} watchdripData The watchdrip data info
      */
     updateValuesWidget(watchdripData) {
-        if (watchdripData == undefined) return;
+        if (watchdripData === undefined) return;
         let bgObj = watchdripData.getBg();
 
         bgStatusLow.setProperty(hmUI.prop.VISIBLE, false);
         bgStatusOk.setProperty(hmUI.prop.VISIBLE, false);
         bgStatusHight.setProperty(hmUI.prop.VISIBLE, false);
+
         if (bgObj.isHasData()) {
             if (bgObj.isHigh) {
                 bgStatusHight.setProperty(hmUI.prop.VISIBLE, true);
@@ -209,6 +210,13 @@ WatchFace({
         iob.setProperty(hmUI.prop.MORE, {
             text: treatmentObj.getPredictIOB()
         });
+
+        if (TEST_DATA){
+            bgStatusLow.setProperty(hmUI.prop.VISIBLE, true);
+            bgStatusOk.setProperty(hmUI.prop.VISIBLE, true);
+            bgStatusHight.setProperty(hmUI.prop.VISIBLE, true);
+            bgValTimeTextWidget.setProperty(hmUI.prop.VISIBLE, true);
+        }
     },
 
     /**

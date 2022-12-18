@@ -257,21 +257,18 @@ export const BG_STATUS_LOW_IMG = {
     x: px(167),
     y: px(143),
     src: 'watchdrip/bgLow.png',
-    visible: false,
 };
 
 export const BG_STATUS_OK_IMG = {
     x: px(190),
     y: px(143),
     src: 'watchdrip/bgOk.png',
-    visible: false,
 };
 
 export const BG_STATUS_HIGHT_IMG = {
     x: px(293),
     y: px(143),
     src: 'watchdrip/bgHight.png',
-    visible: false,
 };
 
 export const IMG_STATUS_BT_DISCONNECTED = {

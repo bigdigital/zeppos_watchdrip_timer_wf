@@ -65,7 +65,7 @@ export const ANALOG_TIME_SECONDS = {
 };
 
 export const NORMAL_HEART_RATE_TEXT_IMG = {
-    x: px(89),
+    x: px(88),
     y: px(175),
     w: px(53),
     padding: false,
@@ -173,7 +173,7 @@ export const BG_VALUE_TEXT_IMG = {
 
 export const BG_TIME_TEXT = {
     x: px(152),
-    y: px(262),
+    y: px(258),
     w: px(114),
     h: px(33),
     color: Colors.defaultTransparent,
@@ -233,9 +233,9 @@ export const IOB_TEXT = {
 
 export const TREATMENT_TEXT = {
     x: px(113),
-    y: px(330),
+    y: px(328),
     w: px(190),
-    h: px(30),
+    h: px(32),
     color: Colors.white,
     text_size: px(22),
     align_h: hmUI.align.CENTER_H,
@@ -259,21 +259,18 @@ export const BG_STATUS_LOW_IMG = {
     x: px(145),
     y: px(124),
     src: 'watchdrip/bgLow.png',
-    visible: false,
 };
 
 export const BG_STATUS_OK_IMG = {
     x: px(165),
     y: px(124),
     src: 'watchdrip/bgOk.png',
-    visible: false,
 };
 
 export const BG_STATUS_HIGHT_IMG = {
     x: px(255),
     y: px(124),
     src: 'watchdrip/bgHight.png',
-    visible: false,
 };
 
 export const IMG_STATUS_BT_DISCONNECTED = {
