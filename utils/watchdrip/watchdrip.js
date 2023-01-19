@@ -141,7 +141,6 @@ export class Watchdrip {
                 //debug.log("data not modified");
                 return;
             }
-            debug.log("screen update");
             watchdrip.updateWidgets();
         }
     }
@@ -228,6 +227,7 @@ export class Watchdrip {
     }
 
     updateWidgets() {
+        debug.log("updateWidgets");
         this.updateValuesWidget()
         this.updateTimesWidget()
     }
