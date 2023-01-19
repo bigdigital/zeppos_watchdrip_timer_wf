@@ -13,6 +13,10 @@ let bigNumArr = range(10).map((v) => {
     return img(`bigNum/${v}.png`);
 });
 
+let bigNumArrAOD = range(10).map((v) => {
+    return img(`bigNumAOD/${v}.png`);
+});
+
 let smallNumArr = range(10).map((v) => {
     return img(`smallNum/${v}.png`);
 });
@@ -30,6 +34,15 @@ export const DIGITAL_TIME_HOUR = {
     hour_array: bigNumArr,
 };
 
+export const DIGITAL_TIME_HOUR_AOD = {
+    hour_startX: px(120),
+    hour_startY: px(46),
+    hour_zero: true,
+    hour_space: 2,
+    hour_align: hmUI.align.CENTER_H,
+    hour_array: bigNumArrAOD,
+};
+
 export const DIGITAL_TIME_MINUTES = {
     minute_startX: px(218),
     minute_startY: px(46),
@@ -37,6 +50,15 @@ export const DIGITAL_TIME_MINUTES = {
     minute_space: 2,
     minute_align: hmUI.align.CENTER_H,
     minute_array: bigNumArr,
+};
+
+export const DIGITAL_TIME_MINUTES_AOD = {
+    minute_startX: px(218),
+    minute_startY: px(46),
+    minute_zero: true,
+    minute_space: 2,
+    minute_align: hmUI.align.CENTER_H,
+    minute_array: bigNumArrAOD,
 };
 
 export const TIME_AM_PM = {
@@ -50,10 +72,27 @@ export const TIME_AM_PM = {
     pm_en_path: img('bigNum/pm.png'),
 }
 
+export const TIME_AM_PM_AOD = {
+    am_x: px(298),
+    am_y: px(84),
+    am_sc_path: img('bigNumAOD/am.png'),
+    am_en_path: img('bigNumAOD/am.png'),
+    pm_x: px(298),
+    pm_y: px(84),
+    pm_sc_path: img('bigNumAOD/pm.png'),
+    pm_en_path: img('bigNumAOD/pm.png'),
+}
+
 export const DIGITAL_TIME_SEPARATOR = {
     x: px(203),
     y: px(63),
     src: img( `bigNum/sp.png`)
+};
+
+export const DIGITAL_TIME_SEPARATOR_AOD = {
+    x: px(203),
+    y: px(63),
+    src: img( `bigNumAOD/sp.png`)
 };
 
 export const ANALOG_TIME_SECONDS = {

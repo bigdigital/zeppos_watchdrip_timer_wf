@@ -16,8 +16,11 @@ import {
     BG_VALUE_TEXT_IMG,
     DAYS_TEXT_IMG,
     DIGITAL_TIME_HOUR,
+    DIGITAL_TIME_HOUR_AOD,
     DIGITAL_TIME_MINUTES,
+    DIGITAL_TIME_MINUTES_AOD,
     DIGITAL_TIME_SEPARATOR,
+    DIGITAL_TIME_SEPARATOR_AOD,
     IMG_LOADING_PROGRESS,
     IMG_STATUS_BT_DISCONNECTED,
     IOB_TEXT,
@@ -27,6 +30,7 @@ import {
     PAI_ARC,
     PHONE_BATTERY_TEXT,
     TIME_AM_PM,
+    TIME_AM_PM_AOD,
     TREATMENT_TEXT,
     WEEK_DAYS
 } from "./styles";
@@ -38,6 +42,8 @@ let imgBg, digitalClockHour, digitalClockMinutes, timeAM_PM, digitalClockSeparat
     screenType;
 let bgValTextWidget, bgValTextImgWidget, bgValTimeTextWidget, bgDeltaTextWidget, bgTrendImageWidget, bgStaleLine,
     phoneBattery, iob, treatment, bgStatusLow, bgStatusOk, bgStatusHight, progress;
+
+let batterySensor, paiSensor;
 
 let globalNS, progressTimer, progressAngle;
 
@@ -85,6 +91,13 @@ function stopLoader() {
     progress.setProperty(hmUI.prop.VISIBLE, false);
 }
 
+function scale_call() {
+    if (screenType !== hmSetting.screen_type.AOD) {
+        batteryCircleArc.setProperty(hmUI.prop.MORE, getArcEndByVal(batterySensor.current, BATTERY_ARC.start_angle, BATTERY_ARC.end_angle))
+        paiCircleArc.setProperty(hmUI.prop.MORE, getArcEndByVal(paiSensor.totalpai, PAI_ARC.start_angle, PAI_ARC.end_angle))
+    }
+}
+
 WatchFace({
     initView() {
         screenType = hmSetting.getScreenType();
@@ -94,13 +107,23 @@ WatchFace({
             imgBg = hmUI.createWidget(hmUI.widget.IMG, BG_IMG);
         }
 
-        digitalClockHour = hmUI.createWidget(hmUI.widget.IMG_TIME, DIGITAL_TIME_HOUR);
+        let clockHourParam = DIGITAL_TIME_HOUR;
+        let clockMinuteParam = DIGITAL_TIME_MINUTES;
+        let AmPMParam = TIME_AM_PM;
+        let clockSeparatorPara = DIGITAL_TIME_SEPARATOR;
+        if (screenType === hmSetting.screen_type.AOD) {
+            clockHourParam = DIGITAL_TIME_HOUR_AOD;
+            clockMinuteParam = DIGITAL_TIME_MINUTES_AOD;
+            AmPMParam = TIME_AM_PM_AOD;
+            clockSeparatorPara = DIGITAL_TIME_SEPARATOR_AOD;
+        }
+        digitalClockHour = hmUI.createWidget(hmUI.widget.IMG_TIME, clockHourParam);
 
-        digitalClockMinutes = hmUI.createWidget(hmUI.widget.IMG_TIME, DIGITAL_TIME_MINUTES);
+        digitalClockMinutes = hmUI.createWidget(hmUI.widget.IMG_TIME, clockMinuteParam);
 
-        timeAM_PM = hmUI.createWidget(hmUI.widget.IMG_TIME, TIME_AM_PM);
+        timeAM_PM = hmUI.createWidget(hmUI.widget.IMG_TIME, AmPMParam);
 
-        digitalClockSeparator = hmUI.createWidget(hmUI.widget.IMG, DIGITAL_TIME_SEPARATOR);
+        digitalClockSeparator = hmUI.createWidget(hmUI.widget.IMG, clockSeparatorPara);
 
         normalHeartRateTextImg = hmUI.createWidget(hmUI.widget.TEXT_IMG, NORMAL_HEART_RATE_TEXT_IMG);
 
@@ -112,28 +135,28 @@ WatchFace({
 
         dateDayImg = hmUI.createWidget(hmUI.widget.IMG_DATE, DAYS_TEXT_IMG);
 
-        secondsPointer = hmUI.createWidget(hmUI.widget.TIME_POINTER, ANALOG_TIME_SECONDS);
-
         btDisconnected = hmUI.createWidget(hmUI.widget.IMG_STATUS, IMG_STATUS_BT_DISCONNECTED);
+        batterySensor = hmSensor.createSensor(hmSensor.id.BATTERY);
+        paiSensor = hmSensor.createSensor(hmSensor.id.PAI);
+        if (screenType !== hmSetting.screen_type.AOD) {
+            batteryCircleArc = hmUI.createWidget(hmUI.widget.ARC, BATTERY_ARC);
+            paiCircleArc = hmUI.createWidget(hmUI.widget.ARC, PAI_ARC);
 
-        batteryCircleArc = hmUI.createWidget(hmUI.widget.ARC, BATTERY_ARC);
-        paiCircleArc = hmUI.createWidget(hmUI.widget.ARC, PAI_ARC);
+            batterySensor.addEventListener(hmSensor.event.CHANGE, scale_call);
+            paiSensor.addEventListener(hmSensor.event.CHANGE, scale_call);
 
-        const battery = hmSensor.createSensor(hmSensor.id.BATTERY);
-        battery.addEventListener(hmSensor.event.CHANGE, function () {
-            scale_call();
-        });
-        const pai = hmSensor.createSensor(hmSensor.id.PAI);
-        pai.addEventListener(hmSensor.event.CHANGE, function () {
-            scale_call();
-        });
+            secondsPointer = hmUI.createWidget(hmUI.widget.TIME_POINTER, ANALOG_TIME_SECONDS);
+        }
 
-        const widgetDelegate = hmUI.createWidget(hmUI.widget.WIDGET_DELEGATE, {
-            resume_call: (function () {
-                screenType = hmSetting.getScreenType();
-                scale_call();
-            })
-        });
+        if (screenType !== hmSetting.screen_type.AOD) {
+            //listen delegate only on normal screen
+            const widgetDelegate = hmUI.createWidget(hmUI.widget.WIDGET_DELEGATE, {
+                resume_call: (function () {
+                    screenType = hmSetting.getScreenType();
+                    scale_call();
+                })
+            });
+        }
 
         //init watchdrip related widgets
         bgValTextWidget = hmUI.createWidget(hmUI.widget.TEXT, BG_VALUE_NO_DATA_TEXT);
@@ -150,13 +173,7 @@ WatchFace({
         bgStatusOk = hmUI.createWidget(hmUI.widget.IMG, BG_STATUS_OK_IMG);
         bgStatusHight = hmUI.createWidget(hmUI.widget.IMG, BG_STATUS_HIGHT_IMG);
         progress = hmUI.createWidget(hmUI.widget.IMG, IMG_LOADING_PROGRESS);
-
-        function scale_call() {
-            if (screenType !== hmSetting.screen_type.AOD) {
-                batteryCircleArc.setProperty(hmUI.prop.MORE, getArcEndByVal(battery.current, BATTERY_ARC.start_angle, BATTERY_ARC.end_angle))
-                paiCircleArc.setProperty(hmUI.prop.MORE, getArcEndByVal(pai.totalpai, PAI_ARC.start_angle, PAI_ARC.end_angle))
-            }
-        }
+        stopLoader();
 
         scale_call();
     },
@@ -211,10 +228,10 @@ WatchFace({
             text: treatmentObj.getPredictIOB()
         });
 
-        if (TEST_DATA){
-            bgStatusLow.setProperty(hmUI.prop.VISIBLE, true);
-            bgStatusOk.setProperty(hmUI.prop.VISIBLE, true);
-            bgStatusHight.setProperty(hmUI.prop.VISIBLE, true);
+        if (TEST_DATA) {
+            // bgStatusLow.setProperty(hmUI.prop.VISIBLE, true);
+            // bgStatusOk.setProperty(hmUI.prop.VISIBLE, true);
+            // bgStatusHight.setProperty(hmUI.prop.VISIBLE, true);
             bgValTimeTextWidget.setProperty(hmUI.prop.VISIBLE, true);
         }
     },
@@ -265,6 +282,12 @@ WatchFace({
     onDestroy() {
         logger.log("wf on destroy invoke");
         watchdrip.destroy();
+        if (typeof batterySensor !== 'undefined') {
+            batterySensor.removeEventListener(hmSensor.event.CHANGE, scale_call);
+        }
+        if (typeof paiSensor !== 'undefined') {
+            paiSensor.removeEventListener(hmSensor.event.CHANGE, scale_call);
+        }
     },
 
     onShow() {
