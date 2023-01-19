@@ -62,7 +62,6 @@ export class Watchdrip {
                 pause_call: watchdrip.widgetDelegateCallbackPauseCall,
             });
         }
-        //this.update();
     }
 
     startDataUpdates() {
@@ -88,13 +87,17 @@ export class Watchdrip {
         return  this.screenType === hmSetting.screen_type.AOD;
     }
 
-    openAPP() {
+    openAPP(page = "") {
         const obj = {
             appid: WATCHDRIP_APP_ID,
             url: "pages/index",
         }
 
-        debug.log("openAPP");
+        if (page !== ""){
+            obj.url = "pages/" + page;
+        }
+
+        debug.log("openAPP page:" + page );
         hmApp.startApp(obj)
     }
 
@@ -358,5 +361,6 @@ export class Watchdrip {
             hmApp.alarmCancel(this.system_alarm_id);
         }
         this.stopDataUpdates();
+        this.dropConnection();
     }
 }
