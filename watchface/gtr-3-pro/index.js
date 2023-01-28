@@ -288,6 +288,7 @@ WatchFace({
         if (typeof paiSensor !== 'undefined') {
             paiSensor.removeEventListener(hmSensor.event.CHANGE, scale_call);
         }
+        stopLoader();
     },
 
     onShow() {

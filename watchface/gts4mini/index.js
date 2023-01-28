@@ -271,6 +271,7 @@ WatchFace({
     onDestroy() {
         logger.log("wf on destroy invoke");
         watchdrip.destroy();
+        stopLoader();
     },
 
     onShow() {
