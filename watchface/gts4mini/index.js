@@ -261,6 +261,7 @@ WatchFace({
         this.initView();
         globalNS.watchdrip = new Watchdrip();
         watchdrip = globalNS.watchdrip;
+        watchdrip.prepare();
         watchdrip.setUpdateValueWidgetCallback(this.updateValuesWidget);
         watchdrip.setUpdateTimesWidgetCallback(this.updateTimesWidget);
         watchdrip.setOnUpdateStartCallback(this.updateStart);

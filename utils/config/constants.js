@@ -6,12 +6,13 @@ export const DATA_UPDATE_INTERVAL_MS = MINUTE_IN_MS * 1;
 export const DATA_AOD_TIMER_UPDATE_INTERVAL_MS = SECOND_IN_MS * 30;
 export const DATA_AOD_UPDATE_INTERVAL_MS = MINUTE_IN_MS * 5;
 
-export const DATA_STALE_TIME_MS = 30 * 1000;
+export const DATA_STALE_TIME_MS = MINUTE_IN_MS * 5;
 
 export const FILES_DIR = "/storage/watchdrip/";
 
 export const Commands = {
     getInfo: "CMD_GET_INFO",
+    putTreatment: "CMD_PUT_TREATMENTS",
     getImg: "CMD_GET_IMG",
 };
 

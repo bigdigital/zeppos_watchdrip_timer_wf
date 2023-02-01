@@ -14,11 +14,7 @@ import {
     BG_TREND_IMAGE,
     BG_VALUE_NO_DATA_TEXT,
     BG_VALUE_TEXT_IMG,
-    DAYS_TEXT_IMG,
-    DIGITAL_TIME_HOUR,
-    DIGITAL_TIME_HOUR_AOD,
-    DIGITAL_TIME_MINUTES,
-    DIGITAL_TIME_MINUTES_AOD,
+    DAYS_TEXT_IMG, DIGITAL_TIME, DIGITAL_TIME_AOD,
     DIGITAL_TIME_SEPARATOR,
     DIGITAL_TIME_SEPARATOR_AOD,
     IMG_LOADING_PROGRESS,
@@ -37,7 +33,7 @@ import {
 import {BG_FILL_RECT, BG_IMG} from "../../utils/config/styles_global";
 import {PROGRESS_ANGLE_INC, PROGRESS_UPDATE_INTERVAL_MS, TEST_DATA} from "../../utils/config/constants";
 
-let imgBg, digitalClockHour, digitalClockMinutes, timeAM_PM, digitalClockSeparator, secondsPointer, btDisconnected,
+let imgBg, digitalClock, digitalClockHour, digitalClockSeparator, secondsPointer, btDisconnected,
     normalHeartRateTextImg, normalStepsTextImg, normalDistTextImg, weekImg, dateDayImg, batteryCircleArc, paiCircleArc,
     screenType;
 let bgValTextWidget, bgValTextImgWidget, bgValTimeTextWidget, bgDeltaTextWidget, bgTrendImageWidget, bgStaleLine,
@@ -107,23 +103,15 @@ WatchFace({
             imgBg = hmUI.createWidget(hmUI.widget.IMG, BG_IMG);
         }
 
-        let clockHourParam = DIGITAL_TIME_HOUR;
-        let clockMinuteParam = DIGITAL_TIME_MINUTES;
-        let AmPMParam = TIME_AM_PM;
-        let clockSeparatorPara = DIGITAL_TIME_SEPARATOR;
+        let digitalTimeParam = DIGITAL_TIME;
+        let clockSeparatorParam = DIGITAL_TIME_SEPARATOR;
         if (screenType === hmSetting.screen_type.AOD) {
-            clockHourParam = DIGITAL_TIME_HOUR_AOD;
-            clockMinuteParam = DIGITAL_TIME_MINUTES_AOD;
-            AmPMParam = TIME_AM_PM_AOD;
-            clockSeparatorPara = DIGITAL_TIME_SEPARATOR_AOD;
+            digitalTimeParam = DIGITAL_TIME_AOD;
+            clockSeparatorParam = DIGITAL_TIME_SEPARATOR_AOD;
         }
-        digitalClockHour = hmUI.createWidget(hmUI.widget.IMG_TIME, clockHourParam);
+        digitalClock = hmUI.createWidget(hmUI.widget.IMG_TIME, digitalTimeParam);
 
-        digitalClockMinutes = hmUI.createWidget(hmUI.widget.IMG_TIME, clockMinuteParam);
-
-        timeAM_PM = hmUI.createWidget(hmUI.widget.IMG_TIME, AmPMParam);
-
-        digitalClockSeparator = hmUI.createWidget(hmUI.widget.IMG, clockSeparatorPara);
+        digitalClockSeparator = hmUI.createWidget(hmUI.widget.IMG, clockSeparatorParam);
 
         normalHeartRateTextImg = hmUI.createWidget(hmUI.widget.TEXT_IMG, NORMAL_HEART_RATE_TEXT_IMG);
 
@@ -272,6 +260,7 @@ WatchFace({
         this.initView();
         globalNS.watchdrip = new Watchdrip();
         watchdrip = globalNS.watchdrip;
+        watchdrip.prepare();
         watchdrip.setUpdateValueWidgetCallback(this.updateValuesWidget);
         watchdrip.setUpdateTimesWidgetCallback(this.updateTimesWidget);
         watchdrip.setOnUpdateStartCallback(this.updateStart);

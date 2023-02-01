@@ -25,43 +25,19 @@ let smallNumAccentArr = range(10).map((v) => {
     return img(`smallNumAccent/${v}.png`);
 });
 
-export const DIGITAL_TIME_HOUR = {
+export const DIGITAL_TIME = {
     hour_startX: px(137),
     hour_startY: px(50),
     hour_zero: true,
     hour_space: 2,
     hour_align: hmUI.align.CENTER_H,
     hour_array: bigNumArr,
-};
-
-export const DIGITAL_TIME_HOUR_AOD = {
-    hour_startX: px(137),
-    hour_startY: px(50),
-    hour_zero: true,
-    hour_space: 2,
-    hour_align: hmUI.align.CENTER_H,
-    hour_array: bigNumArrAOD,
-};
-
-export const DIGITAL_TIME_MINUTES = {
     minute_startX: px(250),
     minute_startY: px(50),
     minute_zero: true,
     minute_space: 2,
     minute_align: hmUI.align.CENTER_H,
     minute_array: bigNumArr,
-};
-
-export const DIGITAL_TIME_MINUTES_AOD = {
-    minute_startX: px(250),
-    minute_startY: px(50),
-    minute_zero: true,
-    minute_space: 2,
-    minute_align: hmUI.align.CENTER_H,
-    minute_array: bigNumArrAOD,
-};
-
-export const TIME_AM_PM = {
     am_x: px(344),
     am_y: px(98),
     am_sc_path: img('bigNum/am.png'),
@@ -70,18 +46,17 @@ export const TIME_AM_PM = {
     pm_y: px(98),
     pm_sc_path: img('bigNum/pm.png'),
     pm_en_path: img('bigNum/pm.png'),
-}
+};
 
-export const TIME_AM_PM_AOD = {
-    am_x: px(344),
-    am_y: px(98),
+export const DIGITAL_TIME_AOD = {
+    ...DIGITAL_TIME,
+    hour_array: bigNumArrAOD,
+    minute_array: bigNumArrAOD,
     am_sc_path: img('bigNumAOD/am.png'),
     am_en_path: img('bigNumAOD/am.png'),
-    pm_x: px(344),
-    pm_y: px(98),
     pm_sc_path: img('bigNumAOD/pm.png'),
     pm_en_path: img('bigNumAOD/pm.png'),
-}
+};
 
 export const DIGITAL_TIME_SEPARATOR = {
     x: px(232),
