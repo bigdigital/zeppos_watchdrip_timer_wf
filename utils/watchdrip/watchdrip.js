@@ -1,5 +1,6 @@
 import {getGlobal} from "../../shared/global";
 import {
+    WATCHDRIP_ALARM_CONFIG_DEFAULTS,
     WATCHDRIP_APP_ID,
     WATCHDRIP_CONFIG,
     WATCHDRIP_CONFIG_DEFAULTS,
@@ -10,6 +11,8 @@ import {
 import {json2str, str2json} from "../../shared/data";
 import {MessageBuilder} from "../../shared/message";
 import {
+    APP_FETCH_TIMER_UPDATE_INTERVAL_MS,
+    APP_FETCH_UPDATE_INTERVAL_MS,
     Commands,
     DATA_AOD_TIMER_UPDATE_INTERVAL_MS,
     DATA_AOD_UPDATE_INTERVAL_MS,
@@ -18,6 +21,7 @@ import {
     DATA_UPDATE_INTERVAL_MS
 } from "../config/constants";
 import {WatchdripData} from "./watchdrip-data";
+import {gotoSubpage} from "../../shared/navigate";
 
 let {messageBuilder} = getApp()._options.globalData;
 
@@ -26,8 +30,6 @@ let watchdrip, debug
 export class Watchdrip {
     constructor() {
         this.screenType = hmSetting.getScreenType();
-
-        this.updateIntervals = this.screenType === hmSetting.screen_type.AOD ? DATA_AOD_UPDATE_INTERVAL_MS : DATA_UPDATE_INTERVAL_MS;
 
         this.globalNS = getGlobal();
         debug = this.globalNS.debug;
@@ -45,19 +47,22 @@ export class Watchdrip {
     }
 
     //call before any usage of the class instance
-    prepare(){
+    prepare() {
         watchdrip = this.globalNS.watchdrip;
     }
 
     start() {
         watchdrip.checkConfigUpdate();
+
+        this.updateIntervals = watchdrip.getUpdateInterval();
+
+
         watchdrip.readInfo();
         watchdrip.updateValuesWidget();
         //Monitor watchface activity in order to recreate connection
         if (watchdrip.isAOD()) {
             watchdrip.widgetDelegateCallbackResumeCall();
-        }
-        else {
+        } else {
             hmUI.createWidget(hmUI.widget.WIDGET_DELEGATE, {
                 resume_call: watchdrip.widgetDelegateCallbackResumeCall,
                 pause_call: watchdrip.widgetDelegateCallbackPauseCall,
@@ -65,9 +70,29 @@ export class Watchdrip {
         }
     }
 
+    getUpdateInterval() {
+        let interval = DATA_UPDATE_INTERVAL_MS;
+        if (watchdrip.isAOD()) {
+            interval = DATA_AOD_UPDATE_INTERVAL_MS;
+        } else if (watchdrip.isAppFetch()) {
+            interval = APP_FETCH_UPDATE_INTERVAL_MS
+        }
+        return interval;
+    }
+
+    getTimerUpdateInterval() {
+        let interval = DATA_TIMER_UPDATE_INTERVAL_MS;
+        if (watchdrip.isAOD()) {
+            interval = DATA_AOD_TIMER_UPDATE_INTERVAL_MS;
+        } else if (watchdrip.isAppFetch()) {
+            interval = APP_FETCH_TIMER_UPDATE_INTERVAL_MS
+        }
+        return interval;
+    }
+
     startDataUpdates() {
         if (watchdrip.intervalTimer != null) return; //already started
-        let interval = watchdrip.isAOD() ? DATA_AOD_TIMER_UPDATE_INTERVAL_MS : DATA_TIMER_UPDATE_INTERVAL_MS;
+        let interval = watchdrip.getUpdateInterval();
         debug.log("startDataUpdates, interval: " + interval);
         watchdrip.intervalTimer = watchdrip.globalNS.setInterval(() => {
             watchdrip.checkUpdates();
@@ -82,26 +107,19 @@ export class Watchdrip {
         }
     }
 
-    isAOD(){
-        return  watchdrip.screenType === hmSetting.screen_type.AOD;
+    isAOD() {
+        return watchdrip.screenType === hmSetting.screen_type.AOD;
     }
 
-    openAPP(page = "") {
-        const obj = {
-            appid: WATCHDRIP_APP_ID,
-            url: "pages/index",
-        }
-
-        if (page !== ""){
-            obj.url = "pages/" + page;
-        }
-
-        debug.log("openAPP page:" + page );
-        hmApp.startApp(obj)
-    }
-
-    isTimeout(time, timeout_ms){
+    isTimeout(time, timeout_ms) {
         return watchdrip.timeSensor.utc - time > timeout_ms;
+    }
+
+    readLastUpdate() {
+        let lastInfoUpdate = hmFS.SysProGetInt64(WF_INFO_LAST_UPDATE);
+        watchdrip.lastUpdateAttempt = hmFS.SysProGetInt64(WF_INFO_LAST_UPDATE_ATTEMPT);
+        watchdrip.lastUpdateSucessful = hmFS.SysProGetBool(WF_INFO_LAST_UPDATE_SUCCESS);
+        return lastInfoUpdate;
     }
 
     checkUpdates() {
@@ -111,7 +129,7 @@ export class Watchdrip {
             // debug.log("updatingData, return");
             return;
         }
-        let lastInfoUpdate = hmFS.SysProGetInt64(WF_INFO_LAST_UPDATE);
+        let lastInfoUpdate = this.readLastUpdate();
         if (!lastInfoUpdate) {
             if (watchdrip.lastUpdateAttempt == null) {
                 debug.log("initial fetch");
@@ -145,6 +163,10 @@ export class Watchdrip {
                 return;
             }
             //update widgets because the data was modified outside the current scope
+            if (watchdrip.isAppFetch()) {
+                debug.log("Read Remote Info");
+                watchdrip.readInfo();
+            }
             watchdrip.updateWidgets();
         }
 
@@ -161,25 +183,9 @@ export class Watchdrip {
         }
     }
 
-    startAppUpdate(isStartNow = false) {
-        //debug.log("Update app info now:" + isStartNow);
-        const obj = {
-            appid: WATCHDRIP_APP_ID,
-            url: "pages/index",
-            param: "update"
-        }
-        if (isStartNow) {
-            hmApp.startApp(obj)
-        } else {
-            obj.delay = 5000;
-            watchdrip.system_alarm_id = hmApp.alarmNew(obj);
-        }
-        watchdrip.lastUpdateAttempt = watchdrip.timeSensor.utc;
-    }
-
     //connect watch with side app
     initConnection() {
-        if (watchdrip.connectionActive){
+        if (watchdrip.connectionActive) {
             return;
         }
         debug.log("initConnection");
@@ -190,7 +196,10 @@ export class Watchdrip {
         messageBuilder.connect();
     }
 
-    dropConnection(){
+    dropConnection() {
+        if (!watchdrip.connectionActive) {
+            return;
+        }
         debug.log("dropConnection");
         messageBuilder.disConnect();
         watchdrip.connectionActive = false;
@@ -209,26 +218,26 @@ export class Watchdrip {
         //debug.log("pause_call");
         watchdrip.stopDataUpdates();
         watchdrip.updatingData = false;
-        if (typeof watchdrip.onUpdateFinishCallback === "function"){
+        if (typeof watchdrip.onUpdateFinishCallback === "function") {
             watchdrip.onUpdateFinishCallback(watchdrip.lastUpdateSucessful);
         }
         watchdrip.dropConnection();
     }
 
 
-    setUpdateValueWidgetCallback(callback){
+    setUpdateValueWidgetCallback(callback) {
         watchdrip.updateValueWidgetCallback = callback;
     }
 
-    setUpdateTimesWidgetCallback(callback){
+    setUpdateTimesWidgetCallback(callback) {
         watchdrip.updateTimesWidgetCallback = callback;
     }
 
-    setOnUpdateStartCallback(callback){
+    setOnUpdateStartCallback(callback) {
         watchdrip.onUpdateStartCallback = callback;
     }
 
-    setOnUpdateFinishCallback(callback){
+    setOnUpdateFinishCallback(callback) {
         watchdrip.onUpdateFinishCallback = callback;
     }
 
@@ -239,13 +248,13 @@ export class Watchdrip {
     }
 
     updateValuesWidget() {
-        if (typeof watchdrip.updateValueWidgetCallback === "function"){
+        if (typeof watchdrip.updateValueWidgetCallback === "function") {
             watchdrip.updateValueWidgetCallback(watchdrip.watchdripData);
         }
     }
 
     updateTimesWidget() {
-        if (typeof watchdrip.updateTimesWidgetCallback === "function"){
+        if (typeof watchdrip.updateTimesWidgetCallback === "function") {
             watchdrip.updateTimesWidgetCallback(watchdrip.watchdripData);
         }
     }
@@ -253,25 +262,43 @@ export class Watchdrip {
     drawGraph() {
     }
 
+    isAppFetch() {
+        return watchdrip.watchdripConfig.useAppFetch === true;
+    }
+
+    resetLastUpdate() {
+        this.lastUpdateAttempt = this.timeSensor.utc;
+        hmFS.SysProSetInt64(WF_INFO_LAST_UPDATE_ATTEMPT, this.lastUpdateAttempt);
+        this.lastUpdateSucessful = false;
+        hmFS.SysProSetBool(WF_INFO_LAST_UPDATE_SUCCESS, this.lastUpdateSucessful);
+    }
+
     fetchInfo() {
-        watchdrip.lastUpdateAttempt = watchdrip.timeSensor.utc;
-        watchdrip.lastUpdateSucessful = false;
+        debug.log("fetchInfo");
+        watchdrip.resetLastUpdate();
+        if (watchdrip.isAppFetch()) {
+            gotoSubpage('update', {
+                    params: WATCHDRIP_ALARM_CONFIG_DEFAULTS
+                },
+                WATCHDRIP_APP_ID);
+            return;
+        }
 
         watchdrip.initConnection();
 
-        debug.log("fetchInfo");
         if (messageBuilder.connectStatus() === false) {
             debug.log("No BT Connection");
             return;
         }
         watchdrip.updatingData = true;
-        if (typeof watchdrip.onUpdateStartCallback === "function"){
+        if (typeof watchdrip.onUpdateStartCallback === "function") {
             watchdrip.onUpdateStartCallback();
         }
-
+        var params = '';
         messageBuilder
             .request({
                 method: Commands.getInfo,
+                params: params
             }, {
                 timeout: 5000
             })
@@ -290,7 +317,6 @@ export class Watchdrip {
                     watchdrip.watchdripData.updateTimeDiff();
 
                     watchdrip.lastInfoUpdate = watchdrip.saveInfo(info);
-                    watchdrip.lastUpdateSucessful = true;
                     watchdrip.updateWidgets();
                 } catch (e) {
                     debug.log("error:" + e);
@@ -301,10 +327,10 @@ export class Watchdrip {
             })
             .finally(() => {
                 watchdrip.updatingData = false;
-                if (typeof watchdrip.onUpdateFinishCallback === "function"){
+                if (typeof watchdrip.onUpdateFinishCallback === "function") {
                     watchdrip.onUpdateFinishCallback(watchdrip.lastUpdateSucessful);
                 }
-                if (watchdrip.isAOD()){
+                if (watchdrip.isAOD()) {
                     watchdrip.dropConnection();
                 }
             });
@@ -325,8 +351,10 @@ export class Watchdrip {
 
     saveInfo(info) {
         hmFS.SysProSetChars(WF_INFO, info);
-        let time = watchdrip.timeSensor.utc;
+        watchdrip.lastUpdateSucessful = true;
+        let time = this.timeSensor.utc;
         hmFS.SysProSetInt64(WF_INFO_LAST_UPDATE, time);
+        hmFS.SysProSetBool(WF_INFO_LAST_UPDATE_SUCCESS, this.lastUpdateSucessful);
         return time;
     }
 
@@ -356,6 +384,7 @@ export class Watchdrip {
         if (watchdrip.configLastUpdate !== configLastUpdate) {
             watchdrip.configLastUpdate = configLastUpdate;
             watchdrip.readConfig();
+            debug.enabled = watchdrip.watchdripConfig.showLog;
         }
     }
 

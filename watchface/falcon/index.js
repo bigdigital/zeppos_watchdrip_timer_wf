@@ -25,8 +25,6 @@ import {
     NORMAL_STEPS_TEXT_IMG,
     PAI_ARC,
     PHONE_BATTERY_TEXT,
-    TIME_AM_PM,
-    TIME_AM_PM_AOD,
     TREATMENT_TEXT,
     WEEK_DAYS
 } from "./styles";

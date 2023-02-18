@@ -25,8 +25,6 @@ import {
     NORMAL_STEPS_TEXT_IMG,
     PAI_ARC,
     PHONE_BATTERY_TEXT,
-    TIME_AM_PM,
-    TIME_AM_PM_AOD,
     TREATMENT_TEXT,
     WEEK_DAYS
 } from "./styles";
@@ -97,11 +95,11 @@ function scale_call() {
 WatchFace({
     initView() {
         screenType = hmSetting.getScreenType();
-        if (screenType === hmSetting.screen_type.AOD) {
+      /*  if (screenType === hmSetting.screen_type.AOD) {
             imgBg = hmUI.createWidget(hmUI.widget.FILL_RECT, BG_FILL_RECT);
         } else {
             imgBg = hmUI.createWidget(hmUI.widget.IMG, BG_IMG);
-        }
+        }*/
 
         let digitalTimeParam = DIGITAL_TIME;
         let clockSeparatorParam = DIGITAL_TIME_SEPARATOR;
@@ -271,12 +269,12 @@ WatchFace({
     onDestroy() {
         logger.log("wf on destroy invoke");
         watchdrip.destroy();
-        if (typeof batterySensor !== 'undefined') {
+        /*if (typeof batterySensor !== 'undefined') {
             batterySensor.removeEventListener(hmSensor.event.CHANGE, scale_call);
         }
         if (typeof paiSensor !== 'undefined') {
             paiSensor.removeEventListener(hmSensor.event.CHANGE, scale_call);
-        }
+        }*/
         stopLoader();
     },
 

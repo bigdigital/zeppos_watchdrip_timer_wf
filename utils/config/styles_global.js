@@ -1,5 +1,5 @@
 import {Colors} from "./constants";
-import {img} from "../helper";
+import {img} from "../../../watchdrip_app/utils/helper";
 import {DEVICE_HEIGHT, DEVICE_WIDTH} from "./device";
 
 export const DEBUG_TEXT = {
