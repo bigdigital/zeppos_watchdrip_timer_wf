@@ -211,7 +211,7 @@ WatchFace({
         });
         let treatmentObj = watchdripData.getTreatment();
         iob.setProperty(hmUI.prop.MORE, {
-            text: treatmentObj.getPredictIOB()
+            text: treatmentObj.getPredictIOB() + treatmentObj.getPredictBWP()
         });
 
         if (TEST_DATA) {

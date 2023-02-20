@@ -3,7 +3,7 @@ import { zeroPad } from "./date";
 import {DEBUG_TEXT} from "../utils/config/styles_global";
 
 
-//this helper allow to display logs on the screen
+//this helper allows to display logs on the screen
 //Also you can use bridge mode to show logs from the app (need to enable logs inside zepp app development menu)
 
 export class DebugText {
@@ -12,11 +12,11 @@ export class DebugText {
     this.debugTextText = "";
     this.widget = hmUI.createWidget(hmUI.widget.TEXT, DEBUG_TEXT);
     this.lines = 0;
-   // this.enabled = true;
+    // this.enabled = true;
     this.enabled = false;
 
-    var loggerName = "wathchdrip";
-    if (hmSetting.getScreenType() == hmSetting.screen_type.AOD){
+    var loggerName = "watchdrip";
+    if (hmSetting.getScreenType() === hmSetting.screen_type.AOD){
       loggerName = loggerName + "-aod";
     }
     this.logger = Logger.getLogger(loggerName);
@@ -24,6 +24,10 @@ export class DebugText {
 
   setLines(lines) {
     this.lines = lines;
+  }
+
+  setEnabled(enabled){
+    this.enabled = enabled;
   }
 
   log(text) {
@@ -34,7 +38,7 @@ export class DebugText {
       return;
     }
     this.debugTextText +=
-      this.getTime() + ":" + formatted + "\r\n";
+        this.getTime() + ":" + formatted + "\r\n";
     var lines = this.debugTextText.split("\r\n");
     if (this.lines !== 0 && lines.length > this.lines) {
       // remove line, starting at the first position
@@ -47,13 +51,13 @@ export class DebugText {
 
   getTime() {
     return (
-      zeroPad(this.t.hour) +
-      ":" +
-      zeroPad(this.t.minute) +
-      ":" +
-      zeroPad(this.t.second) +
-      "." +
-      zeroPad(this.t.utc % 1000, 4)
+        zeroPad(this.t.hour) +
+        ":" +
+        zeroPad(this.t.minute) +
+        ":" +
+        zeroPad(this.t.second) +
+        "." +
+        zeroPad(this.t.utc % 1000, 4)
     );
   }
 
@@ -68,23 +72,23 @@ export class DebugText {
         return obj.name || obj.toString();
       case "object":
         var indent = Array(ndeep || 1).join(" "),
-          isArray = Array.isArray(obj);
+            isArray = Array.isArray(obj);
         return (
-          "{["[+isArray] +
-          Object.keys(obj)
-            .map(function (key) {
-              return (
-                "\r\n " +
-                indent +
-                key +
-                ": " +
-                DebugText.objToString(obj[key], (ndeep || 1) + 1)
-              );
-            })
-            .join(",") +
-          "\r\n" +
-          indent +
-          "}]"[+isArray]
+            "{["[+isArray] +
+            Object.keys(obj)
+                .map(function (key) {
+                  return (
+                      "\r\n " +
+                      indent +
+                      key +
+                      ": " +
+                      DebugText.objToString(obj[key], (ndeep || 1) + 1)
+                  );
+                })
+                .join(",") +
+            "\r\n" +
+            indent +
+            "}]"[+isArray]
         );
       default:
         return obj.toString();

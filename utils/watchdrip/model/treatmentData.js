@@ -2,12 +2,12 @@ import {TEST_DATA} from "../../config/constants";
 import {MINUTE_IN_MS} from "../../../shared/date";
 
 export class TreatmentData {
-    constructor(insulin, carbs, time, predictIOB, predictWPB) {
+    constructor(insulin, carbs, time, predictIOB, predictBWP) {
         this.insulin = insulin;
         this.carbs = carbs;
         this.time = time;
         this.predictIOB = predictIOB;
-        this.predictWPB = predictWPB;
+        this.predictBWP = predictBWP;
     }
 
     getPredictIOB() {
@@ -17,11 +17,11 @@ export class TreatmentData {
         return "IOB: " + this.predictIOB;
     }
 
-    getPredictWPB() {
-        if (this.predictWPB === "" || this.predictWPB === undefined) {
+    getPredictBWP() {
+        if (this.predictBWP === "" || this.predictBWP === undefined) {
             return "";
         }
-        return "WPB: " + this.predictWPB;
+        return "BWP: " + this.predictBWP;
     }
 
     getTreatments() {
