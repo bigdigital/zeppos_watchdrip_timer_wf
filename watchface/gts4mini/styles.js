@@ -1,4 +1,4 @@
-import {img,range} from "../../../watchdrip_app/utils/helper";
+import {img,range} from "../../utils/helper";
 import {Colors} from "../../utils/config/constants";
 
 let bgNumArr = range(10).map((v) => {
