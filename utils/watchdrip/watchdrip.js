@@ -20,7 +20,8 @@ import {
     DATA_AOD_UPDATE_INTERVAL_MS,
     DATA_STALE_TIME_MS,
     DATA_TIMER_UPDATE_INTERVAL_MS,
-    DATA_UPDATE_INTERVAL_MS
+    DATA_UPDATE_INTERVAL_MS,
+    XDRIP_UPDATE_INTERVAL_MS
 } from "../config/constants";
 import {WatchdripData} from "./watchdrip-data";
 import {gotoSubpage} from "../../shared/navigate";
@@ -91,10 +92,10 @@ export class Watchdrip {
 
     getTimerUpdateInterval() {
         let interval = DATA_TIMER_UPDATE_INTERVAL_MS;
-        if (this.isAOD()) {
-            interval = DATA_AOD_TIMER_UPDATE_INTERVAL_MS;
-        } else if (this.isAppFetch()) {
+        if (this.isAppFetch()) {
             interval = APP_FETCH_TIMER_UPDATE_INTERVAL_MS
+        } else if (this.isAOD()) {
+            interval = DATA_AOD_TIMER_UPDATE_INTERVAL_MS;
         }
         return interval;
     }
@@ -137,11 +138,11 @@ export class Watchdrip {
         this.updateTimesWidget();
 
         if (this.watchdripConfig.disableUpdates) {
+            //debug.log("disableUpdates, return");
             return;
         }
-
         if (this.updatingData) {
-            // debug.log("updatingData, return");
+            //debug.log("updatingData, return");
             return;
         }
         let lastInfoUpdate = this.readLastUpdate();
@@ -157,31 +158,41 @@ export class Watchdrip {
                 return;
             }
         } else {
-            if (!this.lastUpdateSucessful) {
-                if (this.lastUpdateAttempt !== null)
-                    if (this.isTimeout(this.lastUpdateAttempt, DATA_STALE_TIME_MS)) {
-                        debug.log("reached DATA_STALE_TIME_MS");
-                        this.fetchInfo();
-                        return;
-                    } else {
-                        return;
-                    }
+            if (this.lastUpdateSucessful) {
+                const bgTimeOlder = this.isTimeout(this.watchdripData.getBg().time, XDRIP_UPDATE_INTERVAL_MS);
+                const statusNowOlder = this.isTimeout(this.watchdripData.getStatus().now, XDRIP_UPDATE_INTERVAL_MS);
+                if (bgTimeOlder || statusNowOlder) {
+                    debug.log("data older than sensor update interval");
+                    this.fetchInfo();
+                    return;
+                }
+                if (this.isTimeout(lastInfoUpdate, this.updateIntervals)) {
+                    debug.log("reached updateIntervals");
+                    this.fetchInfo();
+                    return;
+                }
+                if (this.lastInfoUpdate === lastInfoUpdate) {
+                    //data not modified from outside scope so nothing to do
+                    //debug.log("data not modified");
+                    return;
+                }
+                //update widgets because the data was modified outside the current scope
+                debug.log("update from remote");
+                this.readInfo();
+                this.lastInfoUpdate = lastInfoUpdate;
+                this.updateWidgets();
+            } else {
+                if (this.lastUpdateAttempt == null) {
+                    debug.log("initial fetch");
+                    this.fetchInfo();
+                    return;
+                }
+                if (this.isTimeout(this.lastUpdateAttempt, DATA_STALE_TIME_MS)) {
+                    debug.log("reached DATA_STALE_TIME_MS");
+                    this.fetchInfo();
+                    return;
+                }
             }
-            if (this.isTimeout(lastInfoUpdate, this.updateIntervals)) {
-                debug.log("reached updateIntervals");
-                this.fetchInfo();
-                return;
-            }
-            if (this.lastInfoUpdate === lastInfoUpdate) {
-                //data not modified from outside scope so nothing to do
-                //debug.log("data not modified");
-                return;
-            }
-            //update widgets because the data was modified outside the current scope
-            debug.log("update from remote");
-            this.readInfo();
-            this.lastInfoUpdate = lastInfoUpdate;
-            this.updateWidgets();
         }
     }
 
@@ -382,10 +393,7 @@ export class Watchdrip {
 
     /* will check last config updates to sync config with app*/
     checkConfigUpdate() {
-        debug.log("checkConfigUpdate");
         let configLastUpdate = hmFS.SysProGetInt64(WATCHDRIP_CONFIG_LAST_UPDATE);
-        debug.log(configLastUpdate);
-        debug.log(this.configLastUpdate);
         if (this.configLastUpdate !== configLastUpdate) {
             debug.log("detected config change");
             this.configLastUpdate = configLastUpdate;

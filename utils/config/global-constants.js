@@ -8,7 +8,7 @@ export const WF_INFO_LAST_UPDATE_ATTEMPT = "watchdrip_info_last_attempt";
 export const WF_INFO_LAST_UPDATE_SUCCESS = "watchdrip_info_last_success";
 
 export const WATCHDRIP_CONFIG = "watchdrip_config";
-export const WATCHDRIP_CONFIG_LAST_UPDATE = "watchdrip_config_last";
+export const WATCHDRIP_CONFIG_LAST_UPDATE = "watchdrip_config_time";
 
 export const WATCHDRIP_CONFIG_DEFAULTS = {
     disableUpdates: false,
