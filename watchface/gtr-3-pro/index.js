@@ -95,11 +95,11 @@ function scale_call() {
 WatchFace({
     initView() {
         screenType = hmSetting.getScreenType();
-      /*  if (screenType === hmSetting.screen_type.AOD) {
+        if (screenType === hmSetting.screen_type.AOD) {
             imgBg = hmUI.createWidget(hmUI.widget.FILL_RECT, BG_FILL_RECT);
         } else {
             imgBg = hmUI.createWidget(hmUI.widget.IMG, BG_IMG);
-        }*/
+        }
 
         let digitalTimeParam = DIGITAL_TIME;
         let clockSeparatorParam = DIGITAL_TIME_SEPARATOR;
