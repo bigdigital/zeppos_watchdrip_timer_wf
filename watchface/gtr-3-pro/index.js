@@ -251,19 +251,25 @@ WatchFace({
     },
 
     build() {
-        logger.log("wf on build invoke");
-        globalNS = getGlobal();
-        initDebug();
-        debug.log("build");
-        this.initView();
-        globalNS.watchdrip = new Watchdrip();
-        watchdrip = globalNS.watchdrip;
-        watchdrip.prepare();
-        watchdrip.setUpdateValueWidgetCallback(this.updateValuesWidget);
-        watchdrip.setUpdateTimesWidgetCallback(this.updateTimesWidget);
-        watchdrip.setOnUpdateStartCallback(this.updateStart);
-        watchdrip.setOnUpdateFinishCallback(this.updateFinish);
-        watchdrip.start();
+        try {
+            logger.log("wf on build invoke");
+            globalNS = getGlobal();
+            initDebug();
+            debug.log("build");
+            this.initView();
+            globalNS.watchdrip = new Watchdrip();
+            watchdrip = globalNS.watchdrip;
+            watchdrip.prepare();
+            watchdrip.setUpdateValueWidgetCallback(this.updateValuesWidget);
+            watchdrip.setUpdateTimesWidgetCallback(this.updateTimesWidget);
+            watchdrip.setOnUpdateStartCallback(this.updateStart);
+            watchdrip.setOnUpdateFinishCallback(this.updateFinish);
+            watchdrip.start();
+        }
+        catch (e) {
+            console.log('LifeCycle Error', e)
+            e && e.stack && e.stack.split(/\n/).forEach((i) => console.log('error stack', i))
+        }
     },
 
     onDestroy() {
