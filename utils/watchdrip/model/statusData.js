@@ -31,13 +31,3 @@ export class StatusData {
         return new StatusData(null, null, "");
     }
 }
-
-
-//
-// export const TREATMENT = {
-//     insulin: 'insulin',
-//     carbs: 'carbs',
-//     timestamp: 'time',
-// };
-//
-//

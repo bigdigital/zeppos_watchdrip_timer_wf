@@ -4,8 +4,8 @@ export const WATCHDRIP_APP_ID = "28962";
 
 export const WF_INFO = "watchdrip_info";
 export const WF_INFO_LAST_UPDATE = "watchdrip_info_last";
-export const WF_INFO_LAST_UPDATE_ATTEMPT = "watchdrip_info_last_attempt";
-export const WF_INFO_LAST_UPDATE_SUCCESS = "watchdrip_info_last_success";
+export const WF_INFO_LAST_UPDATE_ATTEMPT = "watchdrip_last_attempt";
+export const WF_INFO_LAST_UPDATE_SUCCESS = "watchdrip_last_success";
 
 export const WATCHDRIP_CONFIG = "watchdrip_config";
 export const WATCHDRIP_CONFIG_LAST_UPDATE = "watchdrip_config_time";

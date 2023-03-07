@@ -30,6 +30,7 @@ import {
 } from "./styles";
 import {BG_FILL_RECT, BG_IMG} from "../../utils/config/styles_global";
 import {PROGRESS_ANGLE_INC, PROGRESS_UPDATE_INTERVAL_MS, TEST_DATA} from "../../utils/config/constants";
+import {PointStyle} from "../../utils/watchdrip/graph/pointStyle";
 
 let imgBg, digitalClock, digitalClockHour, digitalClockSeparator, secondsPointer, btDisconnected,
     normalHeartRateTextImg, normalStepsTextImg, normalDistTextImg, weekImg, dateDayImg, batteryCircleArc, paiCircleArc,
@@ -264,6 +265,21 @@ WatchFace({
             watchdrip.setUpdateTimesWidgetCallback(this.updateTimesWidget);
             watchdrip.setOnUpdateStartCallback(this.updateStart);
             watchdrip.setOnUpdateFinishCallback(this.updateFinish);
+
+            //graph configuration
+            let lineStyles = {};
+            const POINT_SIZE = 8;
+            const TREATMENT_POINT_SIZE = POINT_SIZE + 4;
+            const LINE_SIZE = 3;
+            lineStyles['predict'] = new PointStyle(POINT_SIZE, POINT_SIZE, POINT_SIZE);
+            lineStyles['high'] = new PointStyle(POINT_SIZE, POINT_SIZE, POINT_SIZE);
+            lineStyles['low'] = new PointStyle(POINT_SIZE, POINT_SIZE, POINT_SIZE);
+            lineStyles['inRange'] = new PointStyle(POINT_SIZE, POINT_SIZE, POINT_SIZE);
+            lineStyles['lineLow'] = new PointStyle("", LINE_SIZE);
+            lineStyles['lineHigh'] = new PointStyle("", LINE_SIZE);
+            lineStyles['treatment'] = new PointStyle(TREATMENT_POINT_SIZE, TREATMENT_POINT_SIZE);
+            watchdrip.createGraph(100,100,300,200, lineStyles);
+
             watchdrip.start();
         }
         catch (e) {

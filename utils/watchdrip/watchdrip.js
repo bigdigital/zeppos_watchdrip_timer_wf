@@ -21,10 +21,14 @@ import {
     DATA_STALE_TIME_MS,
     DATA_TIMER_UPDATE_INTERVAL_MS,
     DATA_UPDATE_INTERVAL_MS,
+    GRAPH_LIMIT,
+    MMOLL_TO_MGDL,
     XDRIP_UPDATE_INTERVAL_MS
 } from "../config/constants";
 import {WatchdripData} from "./watchdrip-data";
 import {gotoSubpage} from "../../shared/navigate";
+import {Graph} from "./graph/graph";
+import {Viewport} from "./graph/viewport";
 
 let {messageBuilder} = getApp()._options.globalData;
 
@@ -53,6 +57,10 @@ export class Watchdrip {
         this.configLastUpdate = 0;
         this.updatingData = false;
         this.intervalTimer = null;
+        /*
+        typeof Graph
+        */
+        this.graph = new Graph(0, 0, 0, 0);
     }
 
     //call before any usage of the class instance
@@ -138,11 +146,11 @@ export class Watchdrip {
         this.updateTimesWidget();
 
         if (this.watchdripConfig.disableUpdates) {
-            //debug.log("disableUpdates, return");
+            debug.log("disableUpdates, return");
             return;
         }
         if (this.updatingData) {
-            //debug.log("updatingData, return");
+            debug.log("updatingData, return");
             return;
         }
         let lastInfoUpdate = this.readLastUpdate();
@@ -162,6 +170,10 @@ export class Watchdrip {
                 const bgTimeOlder = this.isTimeout(this.watchdripData.getBg().time, XDRIP_UPDATE_INTERVAL_MS);
                 const statusNowOlder = this.isTimeout(this.watchdripData.getStatus().now, XDRIP_UPDATE_INTERVAL_MS);
                 if (bgTimeOlder || statusNowOlder) {
+                    if (!this.isTimeout(this.lastUpdateAttempt, DATA_STALE_TIME_MS)) {
+                        debug.log("wait DATA_STALE_TIME");
+                        return;
+                    }
                     debug.log("data older than sensor update interval");
                     this.fetchInfo();
                     return;
@@ -183,7 +195,7 @@ export class Watchdrip {
                 this.updateWidgets();
             } else {
                 if (this.lastUpdateAttempt == null) {
-                    debug.log("initial fetch");
+                    debug.log("initial fetch2");
                     this.fetchInfo();
                     return;
                 }
@@ -264,6 +276,7 @@ export class Watchdrip {
         if (typeof this.updateValueWidgetCallback === "function") {
             this.updateValueWidgetCallback(this.watchdripData);
         }
+        this.drawGraph();
     }
 
     updateTimesWidget() {
@@ -272,7 +285,39 @@ export class Watchdrip {
         }
     }
 
+    createGraph(x, y, width, height, lineStyles) {
+        this.graph = new Graph(x, y, width, height);
+        this.graphLineStyles = lineStyles;
+    }
+
     drawGraph() {
+        if (this.graph == null) {
+            return;
+        }
+        let graphInfo = this.watchdripData.getGraph();
+        if (graphInfo.start === "") {
+            return;
+        }
+        let viewportTop = this.watchdripData.getStatus().isMgdl ? GRAPH_LIMIT * MMOLL_TO_MGDL : GRAPH_LIMIT;
+        this.graph.setViewport(new Viewport(graphInfo.start, graphInfo.end, 0, viewportTop));
+        let lines = {};
+        graphInfo.lines.forEach(line => {
+            let name = line.name;
+            if (name in this.graphLineStyles){
+                let lineStyle = this.graphLineStyles[name];
+                //if image not defined, use default line color
+                if (lineStyle.color === "" && lineStyle.imageFile === ""){
+                    lineStyle.color = line.color;
+                }
+                let lineObj = {};
+                lineObj.pointStyle = lineStyle;
+                lineObj.points = line.points;
+                lines[name] = lineObj;
+            }
+        });
+
+        this.graph.setLines(lines);
+        this.graph.draw();
     }
 
     isAppFetch() {
@@ -307,7 +352,7 @@ export class Watchdrip {
         if (typeof this.onUpdateStartCallback === "function") {
             this.onUpdateStartCallback();
         }
-        var params = '';
+        var params = WATCHDRIP_ALARM_CONFIG_DEFAULTS.fetchParams;
         messageBuilder
             .request({
                 method: Commands.getInfo,

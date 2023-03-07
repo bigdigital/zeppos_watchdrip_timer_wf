@@ -38,3 +38,6 @@ export const Colors = {
 
 /*set to true on wf creation*/
 export const TEST_DATA = false;
+
+export const MMOLL_TO_MGDL = 18.0182;
+export const GRAPH_LIMIT = 18;
