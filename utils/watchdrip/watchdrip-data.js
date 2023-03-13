@@ -25,7 +25,7 @@ export class WatchdripData {
     }
 
     updateTimeDiff() {
-        if (this.getStatus().now == null) {
+        if (!this.getStatus().now) {
             this.timeDiff = 0;
         } else {
             this.timeDiff = this.timeSensor.utc - this.getStatus().now;

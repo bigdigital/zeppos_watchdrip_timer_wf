@@ -10,6 +10,9 @@ export const WF_INFO_LAST_UPDATE_SUCCESS = "watchdrip_last_success";
 export const WATCHDRIP_CONFIG = "watchdrip_config";
 export const WATCHDRIP_CONFIG_LAST_UPDATE = "watchdrip_config_time";
 
+export const WF_INFO_DIR = "/storage/watchdrip";
+export const WF_INFO_FILE = WF_INFO_DIR + "/info.json";
+
 export const WATCHDRIP_CONFIG_DEFAULTS = {
     disableUpdates: false,
     showLog: false,

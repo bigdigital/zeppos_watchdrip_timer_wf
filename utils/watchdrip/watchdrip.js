@@ -6,6 +6,8 @@ import {
     WATCHDRIP_CONFIG_DEFAULTS,
     WATCHDRIP_CONFIG_LAST_UPDATE,
     WF_INFO,
+    WF_INFO_DIR,
+    WF_INFO_FILE,
     WF_INFO_LAST_UPDATE,
     WF_INFO_LAST_UPDATE_ATTEMPT,
     WF_INFO_LAST_UPDATE_SUCCESS
@@ -23,8 +25,10 @@ import {
     DATA_UPDATE_INTERVAL_MS,
     GRAPH_LIMIT,
     MMOLL_TO_MGDL,
+    USE_FILE_INFO_STORAGE,
     XDRIP_UPDATE_INTERVAL_MS
 } from "../config/constants";
+import * as fs from "./../../shared/fs";
 import {WatchdripData} from "./watchdrip-data";
 import {gotoSubpage} from "../../shared/navigate";
 import {Graph} from "./graph/graph";
@@ -50,13 +54,14 @@ export class Watchdrip {
         this.timeSensor = hmSensor.createSensor(hmSensor.id.TIME);
         this.watchdripData = new WatchdripData(this.timeSensor);
 
-        this.system_alarm_id = null;
         this.lastInfoUpdate = 0;
         this.lastUpdateAttempt = null;
         this.lastUpdateSucessful = false;
         this.configLastUpdate = 0;
         this.updatingData = false;
         this.intervalTimer = null;
+        this.firstRun = true;
+        this.resumeCall = false;
         /*
         typeof Graph
         */
@@ -70,6 +75,7 @@ export class Watchdrip {
 
     start() {
         this.checkConfigUpdate();
+        this.createWatchdripDir();
         this.updateIntervals = this.getUpdateInterval();
         this.readInfo();
         this.updateValuesWidget();
@@ -130,6 +136,9 @@ export class Watchdrip {
     }
 
     isTimeout(time, timeout_ms) {
+        if (!time) {
+            return false;
+        }
         return this.timeSensor.utc - time > timeout_ms;
     }
 
@@ -140,9 +149,25 @@ export class Watchdrip {
         return lastInfoUpdate;
     }
 
+    handleRareCases() {
+        let fetch = false;
+        if (this.lastUpdateAttempt == null) {
+            debug.log("initial fetch");
+            fetch = true;
+        } else if (this.isTimeout(this.lastUpdateAttempt, DATA_STALE_TIME_MS)) {
+            debug.log("the side app not responding, force update again");
+            fetch = true;
+        }
+        if (fetch) {
+            this.fetchInfo();
+        }
+    }
+
     checkUpdates() {
         //debug.log("checkUpdates");
-        this.checkConfigUpdate();
+        if (this.checkConfigUpdate()) {
+            return; //restart
+        }
         this.updateTimesWidget();
 
         if (this.watchdripConfig.disableUpdates) {
@@ -155,18 +180,21 @@ export class Watchdrip {
         }
         let lastInfoUpdate = this.readLastUpdate();
         if (!lastInfoUpdate) {
-            if (this.lastUpdateAttempt == null) {
-                debug.log("initial fetch");
-                this.fetchInfo();
-                return;
-            }
-            if (this.isTimeout(this.lastUpdateAttempt, DATA_STALE_TIME_MS)) {
-                debug.log("the side app not responding, force update again");
-                this.fetchInfo();
-                return;
-            }
+            this.handleRareCases();
         } else {
             if (this.lastUpdateSucessful) {
+                if (this.lastInfoUpdate !== lastInfoUpdate) {
+                    //update widgets because the data was modified outside the current scope
+                    debug.log("update from remote");
+                    this.readInfo();
+                    this.lastInfoUpdate = lastInfoUpdate;
+                    this.updateWidgets();
+                }
+                if (this.isTimeout(lastInfoUpdate, this.updateIntervals)) {
+                    debug.log("reached updateIntervals");
+                    this.fetchInfo();
+                    return;
+                }
                 const bgTimeOlder = this.isTimeout(this.watchdripData.getBg().time, XDRIP_UPDATE_INTERVAL_MS);
                 const statusNowOlder = this.isTimeout(this.watchdripData.getStatus().now, XDRIP_UPDATE_INTERVAL_MS);
                 if (bgTimeOlder || statusNowOlder) {
@@ -178,32 +206,10 @@ export class Watchdrip {
                     this.fetchInfo();
                     return;
                 }
-                if (this.isTimeout(lastInfoUpdate, this.updateIntervals)) {
-                    debug.log("reached updateIntervals");
-                    this.fetchInfo();
-                    return;
-                }
-                if (this.lastInfoUpdate === lastInfoUpdate) {
-                    //data not modified from outside scope so nothing to do
-                    //debug.log("data not modified");
-                    return;
-                }
-                //update widgets because the data was modified outside the current scope
-                debug.log("update from remote");
-                this.readInfo();
-                this.lastInfoUpdate = lastInfoUpdate;
-                this.updateWidgets();
+                //data not modified from outside scope so nothing to do
+                debug.log("data not modified");
             } else {
-                if (this.lastUpdateAttempt == null) {
-                    debug.log("initial fetch2");
-                    this.fetchInfo();
-                    return;
-                }
-                if (this.isTimeout(this.lastUpdateAttempt, DATA_STALE_TIME_MS)) {
-                    debug.log("reached DATA_STALE_TIME_MS");
-                    this.fetchInfo();
-                    return;
-                }
+                this.handleRareCases();
             }
         }
     }
@@ -233,22 +239,30 @@ export class Watchdrip {
     /*Callback which is called  when watchface is active  (visible)*/
     widgetDelegateCallbackResumeCall() {
         debug.log("resume_call");
-        this.readInfo();
-        this.updatingData = false;
-        this.startDataUpdates();
+        //for some reason the wf can call resume two times
+        if (!this.resumeCall) {
+            this.resumeCall = true;
+            //prevent two reading(useful for AOD)
+            if (this.firstRun) {
+                this.firstRun = false;
+                this.readInfo();
+            }
+            this.updatingData = false;
+            this.startDataUpdates();
+        } else {
+            debug.log("prevent second resume");
+        }
     }
 
     /*Callback which is called  when watchface deactivating (not visible)*/
     widgetDelegateCallbackPauseCall() {
         //debug.log("pause_call");
         this.stopDataUpdates();
+        this.resumeCall = false;
         this.updatingData = false;
-        if (typeof this.onUpdateFinishCallback === "function") {
-            this.onUpdateFinishCallback(this.lastUpdateSucessful);
-        }
+        this.updateFinish();
         this.dropConnection();
     }
-
 
     setUpdateValueWidgetCallback(callback) {
         this.updateValueWidgetCallback = callback;
@@ -285,28 +299,45 @@ export class Watchdrip {
         }
     }
 
+    updateStart() {
+        if (typeof this.onUpdateStartCallback === "function") {
+            this.onUpdateStartCallback();
+        }
+    }
+
+    updateFinish() {
+        if (typeof this.onUpdateFinishCallback === "function") {
+            this.onUpdateFinishCallback(this.lastUpdateSucessful);
+        }
+    }
+
     createGraph(x, y, width, height, lineStyles) {
         this.graph = new Graph(x, y, width, height);
         this.graphLineStyles = lineStyles;
     }
 
+    //draw graph only on normal display
+    //the aod mode is glitchy
     drawGraph() {
-        if (this.graph == null) {
+        if (this.graph == null || this.isAOD()) {
             return;
         }
+
         let graphInfo = this.watchdripData.getGraph();
         if (graphInfo.start === "") {
+            this.graph.clear();
             return;
         }
+        //debug.log("draw graph");
         let viewportTop = this.watchdripData.getStatus().isMgdl ? GRAPH_LIMIT * MMOLL_TO_MGDL : GRAPH_LIMIT;
         this.graph.setViewport(new Viewport(graphInfo.start, graphInfo.end, 0, viewportTop));
         let lines = {};
         graphInfo.lines.forEach(line => {
             let name = line.name;
-            if (name in this.graphLineStyles){
+            if (name in this.graphLineStyles) {
                 let lineStyle = this.graphLineStyles[name];
                 //if image not defined, use default line color
-                if (lineStyle.color === "" && lineStyle.imageFile === ""){
+                if (lineStyle.color === "" && lineStyle.imageFile === "") {
                     lineStyle.color = line.color;
                 }
                 let lineObj = {};
@@ -316,6 +347,7 @@ export class Watchdrip {
             }
         });
 
+        //debug.log("Lines count : " + Object.keys(lines).length);
         this.graph.setLines(lines);
         this.graph.draw();
     }
@@ -349,9 +381,7 @@ export class Watchdrip {
             return;
         }
         this.updatingData = true;
-        if (typeof this.onUpdateStartCallback === "function") {
-            this.onUpdateStartCallback();
-        }
+        this.updateStart();
         var params = WATCHDRIP_ALARM_CONFIG_DEFAULTS.fetchParams;
         messageBuilder
             .request({
@@ -362,19 +392,19 @@ export class Watchdrip {
             })
             .then((data) => {
                 debug.log("received data");
-                const {result: info = {}} = data;
+                let {result: info = {}} = data;
                 try {
                     if (info.error) {
                         debug.log("Error");
                         debug.log(info);
                         return;
                     }
+                    this.lastInfoUpdate = this.saveInfo(info);
                     let dataInfo = str2json(info);
-
+                    info = null;
                     this.watchdripData.setData(dataInfo);
                     this.watchdripData.updateTimeDiff();
-
-                    this.lastInfoUpdate = this.saveInfo(info);
+                    dataInfo = null;
                     this.updateWidgets();
                 } catch (e) {
                     debug.log("error:" + e);
@@ -394,21 +424,46 @@ export class Watchdrip {
             });
     }
 
+    createWatchdripDir() {
+        if (USE_FILE_INFO_STORAGE && !this.isAOD()) {
+            if (!fs.statSync(WF_INFO_DIR)) {
+                fs.mkdirSync(WF_INFO_DIR);
+            }
+            // const [fileNameArr] = hmFS.readdir("/storage");
+            // debug.log(fileNameArr);
+        }
+    }
+
     readInfo() {
-        let info = hmFS.SysProGetChars(WF_INFO);
-        let data = {};
+        let info = "";
+        if (USE_FILE_INFO_STORAGE) {
+            info = fs.readTextFile(WF_INFO_FILE);
+        } else {
+            info = hmFS.SysProGetChars(WF_INFO);
+        }
         if (info) {
+            let data = {};
             try {
                 data = str2json(info);
+                info = null;
+                debug.log("data was read");
+                this.watchdripData.setData(data); 
+                this.watchdripData.timeDiff = 0;
             } catch (e) {
 
             }
+            data = null;
+            return true
         }
-        this.watchdripData.setData(data);
+        return false;
     }
 
     saveInfo(info) {
-        hmFS.SysProSetChars(WF_INFO, info);
+        if (USE_FILE_INFO_STORAGE) {
+            fs.writeTextFile(WF_INFO_FILE, info);
+        } else {
+            hmFS.SysProSetChars(WF_INFO, info);
+        }
         this.lastUpdateSucessful = true;
         let time = this.timeSensor.utc;
         hmFS.SysProSetInt64(WF_INFO_LAST_UPDATE, time);
@@ -447,13 +502,12 @@ export class Watchdrip {
             //restart timer (the fetch mode can be changed)
             this.stopDataUpdates();
             this.startDataUpdates();
+            return true;
         }
+        return false
     }
 
     destroy() {
-        if (this.system_alarm_id !== null) {
-            hmApp.alarmCancel(this.system_alarm_id);
-        }
         this.stopDataUpdates();
         this.dropConnection();
     }

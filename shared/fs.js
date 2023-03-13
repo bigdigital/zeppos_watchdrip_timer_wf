@@ -1,3 +1,5 @@
+import {json2str, str2json} from "./data";
+
 const logger = DeviceRuntimeCore.HmLogger.getLogger("fs.js");
 
 function ab2str(buf) {
@@ -5,12 +7,12 @@ function ab2str(buf) {
 }
 
 function str2ab(str) {
-  var buf = new ArrayBuffer(str.length * 2); // 2 bytes for each char
-  var bufView = new Uint16Array(buf);
+  var buf = new ArrayBuffer(str.length * 2) // 2 bytes for each char
+  var bufView = new Uint16Array(buf)
   for (var i = 0, strLen = str.length; i < strLen; i++) {
-    bufView[i] = str.charCodeAt(i);
+    bufView[i] = str.charCodeAt(i)
   }
-  return buf;
+  return buf
 }
 
 /**
@@ -19,15 +21,15 @@ function str2ab(str) {
  * @returns
  */
 export function statSync(filename) {
-  logger.log("statSync", filename);
+  //logger.log("statSync", filename);
   //获取文件信息
   const [fs_stat, err] = stat(filename);
-  logger.log("res", fs_stat, err);
+  //logger.log("res", fs_stat, err);
   if (err == 0) {
-    logger.log("fs--->size:", fs_stat.size);
+    //logger.log("fs--->size:", fs_stat.size);
     return fs_stat;
   } else {
-    logger.log("fs--->err:", err);
+    //logger.log("fs--->err:", err);
     return null;
   }
 }
@@ -55,7 +57,7 @@ export function writeFileSync(filename, data, options) {
 
   //打开/创建文件
   const file = open(filename, hmFS.O_CREAT | hmFS.O_RDWR | hmFS.O_TRUNC);
-  logger.log("writeFileSync file open success -->", file);
+  // logger.log("writeFileSync file open success -->", file);
   //定位到文件开始位置
   hmFS.seek(file, 0, hmFS.SEEK_SET);
   //写入buffer
@@ -81,18 +83,18 @@ export function open(path, m) {
  * @param {*} options
  */
 export function writeRawFileSync(filename, source_buf, options) {
-  logger.log("writeRawFileSync begin -->", filename);
+  // logger.log("writeRawFileSync begin -->", filename);
 
   //打开/创建文件
   const file = open(filename, hmFS.O_CREAT | hmFS.O_RDWR | hmFS.O_TRUNC);
-  logger.log("writeFileSync file open success -->", file);
+  // logger.log("writeFileSync file open success -->", file);
   //定位到文件开始位置
   hmFS.seek(file, 0, hmFS.SEEK_SET);
   //写入buffer
   hmFS.write(file, source_buf.buffer, 0, source_buf.length);
   //关闭文件
   hmFS.close(file);
-  logger.log("writeFileSync success -->", filename);
+  //logger.log("writeFileSync success -->", filename);
 }
 
 /**
@@ -102,24 +104,23 @@ export function writeRawFileSync(filename, source_buf, options) {
  * @returns
  */
 export function readFileSync(filename, options) {
-  logger.log("readFileSync fiename:", filename);
+  // logger.log("readFileSync fiename:", filename);
 
   const fs_stat = statSync(filename);
   if (!fs_stat) return undefined;
-
+  //logger.log("readFileSync", fs_stat);
   const destination_buf = new Uint8Array(fs_stat.size);
   //打开/创建文件
-  const file = hmFS.open(filename, hmFS.O_RDONLY);
+  const file = open(filename, hmFS.O_RDONLY);
   //定位到文件开始位置
   hmFS.seek(file, 0, hmFS.SEEK_SET);
   //读取buffer
   hmFS.read(file, destination_buf.buffer, 0, fs_stat.size);
   //关闭文件
   hmFS.close(file);
-
   const content = ab2str(destination_buf.buffer);
   //读取结果打印
-  logger.log("readFileSync", content);
+  //logger.log("readFileSync", content);
   return content;
 }
 
@@ -128,9 +129,9 @@ export function readFileSync(filename, options) {
  * @param {*} filename
  */
 export function unlinkSync(filename) {
-  logger.log("unlinkSync begin -->", filename);
+  //logger.log("unlinkSync begin -->", filename);
   const result = hmFS.remove(filename);
-  logger.log("unlinkSync result -->", result);
+  //logger.log("unlinkSync result -->", result);
   return result;
 }
 
@@ -139,9 +140,9 @@ export function unlinkSync(filename) {
  * @param {*} filename
  */
 export function renameSync(oldFilename, newFilename) {
-  logger.log("renameSync begin -->", filename);
+  //logger.log("renameSync begin -->", filename);
   hmFS.rename(oldFilename, newFilename);
-  logger.log("renameSync success -->", filename);
+  //logger.log("renameSync success -->", filename);
 }
 
 /**
@@ -150,9 +151,9 @@ export function renameSync(oldFilename, newFilename) {
  * @param {*} options
  */
 export function mkdirSync(path, options) {
-  logger.log("mkdirSync begin -->", path);
+  // logger.log("mkdirSync begin -->", path);
   hmFS.mkdir(path);
-  logger.log("mkdirSync success -->", path);
+  // logger.log("mkdirSync success -->", path);
 }
 
 /**
@@ -161,10 +162,12 @@ export function mkdirSync(path, options) {
  * @param {*} options
  */
 export function readdirSync(path, options) {
-  logger.log("readdirSync begin -->", path);
-  hmFS.readdirSync(path);
-  logger.log("readdirSync success -->", path);
+  //logger.log("readdirSync begin -->", path);
+  return hmFS.readdirSync(path);
+  //logger.log("readdirSync success -->", path);
 }
+
+Page;
 
 /**
  * Just to test the fs module
@@ -189,4 +192,35 @@ export function getSelfPath() {
 
 export function fullPath(path) {
   return getSelfPath() + "/assets/" + path;
+}
+
+export function readTextFile(filename) {
+  if (!filename.startsWith("/storage")) filename = fullPath(filename);
+
+  return readFileSync(filename);
+}
+
+export function writeTextFile(filename, data) {
+  if (!filename.startsWith("/storage")) filename = fullPath(filename);
+  try {
+    unlinkSync(filename);
+  } catch (e) {
+  }
+  writeFileSync(filename, data);
+  data = null;
+}
+
+export function writeJSON(filename, data) {
+  let str = json2str(data);
+  data = null;
+  writeTextFile(filename, str)
+  str = null;
+}
+
+export function readJSON(filename) {
+  let str = readTextFile(filename);
+  if (!str) {
+    return false;
+  }
+  return str2json(str);
 }

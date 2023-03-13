@@ -1,3 +1,8 @@
+import {getGlobal} from "../../../shared/global";
+/*
+typeof DebugText
+*/
+let debug = null;
 export class Graph {
     constructor(x, y, width, height) {
         this.x = x;
@@ -7,6 +12,8 @@ export class Graph {
         this.xBound = this.x + width;
         this.yBound = this.y + height;
         this.widgets = [];
+        this.globalNS = getGlobal();
+        debug = this.globalNS.debug;
     }
 
     setLines(lines) {
@@ -19,16 +26,16 @@ export class Graph {
 
     draw() {
         if (typeof this.lines === 'undefined') {
-            console.log("No data");
-            return;
-        }
-
-        if (typeof this.viewport === 'undefined') {
-            console.log("viewport not defined");
+            debug.log("No data");
             return;
         }
 
         this.clear();
+
+        if (typeof this.viewport === 'undefined') {
+            debug.log("viewport not defined");
+            return;
+        }
 
         let viewportWidth = this.viewport.right - this.viewport.left;
         let viewportHeight = this.viewport.top - this.viewport.bottom;
@@ -47,6 +54,7 @@ export class Graph {
                 }
             );
         });
+        //debug.log("Graph el created: " + this.widgets.length)
     }
 
     drawElement(x, y, pointStyle, lineName) {
@@ -89,13 +97,15 @@ export class Graph {
                 w: pointStyle.width,
                 h: pointStyle.height,
                 radius: pointStyle.radius,
-                color: color
+                color: color,
+                show_level: hmUI.show_level.ONLY_NORMAL,
             })
         } else {
             widget = hmUI.createWidget(hmUI.widget.IMG, {
                 x: x,
                 y: y,
-                src: pointStyle.imageFile
+                src: pointStyle.imageFile,
+                show_level: hmUI.show_level.ONLY_NORMAL,
             })
         }
         this.widgets.push(widget);
@@ -107,5 +117,6 @@ export class Graph {
         });
 
         this.widgets = [];
+        //debug.log("Graph clear");
     }
 }
