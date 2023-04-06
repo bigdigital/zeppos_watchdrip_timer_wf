@@ -41,6 +41,18 @@
         {
           "name": "gtr-3-prow",
           "deviceSource": 230
+        },
+        {
+          "name": "gtr3-pro-le1",
+          "deviceSource": 241
+        },
+        {
+          "name": "gtr3-pro-le2",
+          "deviceSource": 242
+        },
+        {
+          "name": "gtr3-pro-meilin",
+          "deviceSource": 6095106
         }
       ],
       "designWidth": 480
