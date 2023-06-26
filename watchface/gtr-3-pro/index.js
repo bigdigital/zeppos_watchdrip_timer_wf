@@ -16,7 +16,7 @@ import {
     BG_VALUE_TEXT_IMG,
     DAYS_TEXT_IMG, DIGITAL_TIME, DIGITAL_TIME_AOD,
     DIGITAL_TIME_SEPARATOR,
-    DIGITAL_TIME_SEPARATOR_AOD,
+    DIGITAL_TIME_SEPARATOR_AOD, GRAPH_SETTINGS,
     IMG_LOADING_PROGRESS,
     IMG_STATUS_BT_DISCONNECTED,
     IOB_TEXT,
@@ -268,9 +268,9 @@ WatchFace({
 
             //graph configuration
             let lineStyles = {};
-            const POINT_SIZE = 8;
-            const TREATMENT_POINT_SIZE = POINT_SIZE + 4;
-            const LINE_SIZE = 3;
+            const POINT_SIZE = GRAPH_SETTINGS.point_size
+            const TREATMENT_POINT_SIZE = GRAPH_SETTINGS.treatment_point_size
+            const LINE_SIZE = GRAPH_SETTINGS.line_size
             lineStyles['predict'] = new PointStyle(POINT_SIZE, POINT_SIZE, POINT_SIZE);
             lineStyles['high'] = new PointStyle(POINT_SIZE, POINT_SIZE, POINT_SIZE);
             lineStyles['low'] = new PointStyle(POINT_SIZE, POINT_SIZE, POINT_SIZE);
@@ -278,7 +278,8 @@ WatchFace({
             lineStyles['lineLow'] = new PointStyle("", LINE_SIZE);
             lineStyles['lineHigh'] = new PointStyle("", LINE_SIZE);
             lineStyles['treatment'] = new PointStyle(TREATMENT_POINT_SIZE, TREATMENT_POINT_SIZE);
-            watchdrip.createGraph(100,100,300,200, lineStyles);
+
+            watchdrip.createGraph(GRAPH_SETTINGS.x,GRAPH_SETTINGS.y,GRAPH_SETTINGS.w,GRAPH_SETTINGS.h, lineStyles);
 
             watchdrip.start();
         }

@@ -4,6 +4,8 @@ import {MINUTE_IN_MS, niceTime} from "../../shared/date";
 import {TreatmentData} from "./model/treatmentData";
 import {PumpData} from "./model/pumpData";
 import {GraphData} from "./model/graphData";
+import {ExternalData} from "./model/externalData";
+
 
 const BG_STALE_TIME_MS = 13 * MINUTE_IN_MS;
 
@@ -60,6 +62,12 @@ export class WatchdripData {
         } else {
             this.graph = Object.assign(GraphData.prototype, data['graph']);
         }
+
+        if (data['external'] === undefined) {
+            this.external = ExternalData.createEmpty();
+        } else {
+            this.external = Object.assign(ExternalData.prototype, data['external']);
+        }
     }
 
     /** @return BgData $object */
@@ -80,6 +88,11 @@ export class WatchdripData {
     /** @return PumpData $object */
     getPump() {
         return this.pump;
+    }
+
+    /** @return ExternalData $object */
+    getExternal() {
+        return this.external;
     }
 
     /** @return GraphData $object */

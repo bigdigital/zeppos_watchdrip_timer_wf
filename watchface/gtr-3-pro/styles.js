@@ -304,3 +304,14 @@ export const IMG_LOADING_PROGRESS = {
     center_y: 20,
     visible: false,
 };
+
+
+export const GRAPH_SETTINGS = {
+    x: px(100),
+    y: px(100),
+    w: px(300),
+    h: px(200),
+    point_size: 8,
+    treatment_point_size: 12,
+    line_size: 3
+};

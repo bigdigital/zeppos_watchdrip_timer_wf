@@ -399,6 +399,7 @@ export class Watchdrip {
                         debug.log(info);
                         return;
                     }
+                    //debug.log(info);
                     this.lastInfoUpdate = this.saveInfo(info);
                     let dataInfo = str2json(info);
                     info = null;
