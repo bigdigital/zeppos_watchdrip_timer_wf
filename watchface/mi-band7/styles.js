@@ -1,5 +1,6 @@
 import {img,range} from "../../utils/helper";
 import {Colors} from "../../utils/config/constants";
+import {DEVICE_WIDTH} from "../../utils/config/device";
 
 const bgNumArr = range(10).map((v) => {
     return img(`bgNum/${v}.png`);
@@ -61,7 +62,7 @@ export const DIGITAL_TIME = {
     pm_y: px(40),
     pm_sc_path: img('bigNum/pm.png'),
     pm_en_path: img('bigNum/pm.png'),
-    show_level: hmUI.show_level.ONLY_NORMAL
+    show_level: hmUI.show_level.ONLY_NORMAL | hmUI.show_level.ONLY_EDIT
 };
 
 export const DIGITAL_TIME_AOD = {
@@ -113,7 +114,7 @@ export const DATE_TEXT_IMG = {
     // month_unit_sc: img('smallNumAccent/d.png'), // dot
     // month_unit_tc: img('smallNumAccent/d.png'),
     // month_unit_en: img('smallNumAccent/d.png'),
-    show_level: hmUI.show_level.ONLY_NORMAL
+    show_level: hmUI.show_level.ONLY_NORMAL | hmUI.show_level.ONLY_EDIT
 };
 
 export const WEEK_DAYS_IMG = {
@@ -122,13 +123,13 @@ export const WEEK_DAYS_IMG = {
     week_en: weekEnArr,
     week_tc: weekEnArr,
     week_sc: weekEnArr,
-    show_level: hmUI.show_level.ONLY_NORMAL
+    show_level: hmUI.show_level.ONLY_NORMAL | hmUI.show_level.ONLY_EDIT
 };
 
 export const BG_VALUE_NO_DATA_TEXT = {
-    x: px(66-44),
-    y: px(160),
-    w: px(59),
+    x: px(6),
+    y: px(155),
+    w: px(103),
     h: px(46),
     color: Colors.white,
     text_size: px(34),
@@ -136,7 +137,7 @@ export const BG_VALUE_NO_DATA_TEXT = {
     align_v: hmUI.align.CENTER_V,
     text_style: hmUI.text_style.NONE,
     text: 'No data',
-    show_level: hmUI.show_level.ONLY_NORMAL
+    show_level: hmUI.show_level.ONLY_NORMAL | hmUI.show_level.ONLY_EDIT
 };
 
 export const BG_VALUE_TEXT_IMG = {
@@ -148,7 +149,7 @@ export const BG_VALUE_TEXT_IMG = {
     font_array: bgNumArr,
     visible: false,
     h_space:1,
-    show_level: hmUI.show_level.ONLY_NORMAL
+    show_level: hmUI.show_level.ONLY_NORMAL | hmUI.show_level.ONLY_EDIT
 };
 
 export const BG_VALUE_TEXT_IMG_AOD = {
@@ -170,7 +171,7 @@ export const BG_TIME_TEXT = {
     align_h: hmUI.align.CENTER_H,
     align_v: hmUI.align.TOP,
     text_style: hmUI.text_style.NONE,
-    show_level: hmUI.show_level.ONLY_NORMAL
+    show_level: hmUI.show_level.ONLY_NORMAL | hmUI.show_level.ONLY_EDIT
 };
 
 export const BG_DELTA_TEXT = {
@@ -183,7 +184,7 @@ export const BG_DELTA_TEXT = {
     align_h: hmUI.align.CENTER_H,
     align_v: hmUI.align.TOP,
     text_style: hmUI.text_style.NONE,
-    show_level: hmUI.show_level.ONLY_NORMAL
+    show_level: hmUI.show_level.ONLY_NORMAL | hmUI.show_level.ONLY_EDIT
 };
 
 export const BG_TREND_IMAGE = {
@@ -192,46 +193,46 @@ export const BG_TREND_IMAGE = {
     y: px(215),
     w: px(60),
     h: px(41),
-    show_level: hmUI.show_level.ONLY_NORMAL
+    show_level: hmUI.show_level.ONLY_NORMAL | hmUI.show_level.ONLY_EDIT
 };
 
 export const BG_STALE_IMG = {
-//    x: px(69-45),
-//    y: px(135-10),
-    x: px(64-50),
-    y: px(105-10-3),
+    x: px(14),
+    y: px(130),
     src: 'watchdrip/stale.png',
     visible: false,
-    show_level: hmUI.show_level.ONLY_NORMAL
 };
 
+const XDRIP_TEXT1_W = 165
+const XDRIP_TEXT2_W = 150
+
 // Xdrip modified to put ExternalStatusService.getLastStatusLine()
-export const AAPS_TEXT = {
-    x: px(10),
-    y: px(400),
-    w: px(165),
-    h: px(27),
+export const XDRIP_TEXT1 = {
+    x: (DEVICE_WIDTH - XDRIP_TEXT1_W) / 2,
+    y: px(420),
+    w: XDRIP_TEXT1_W,
+    h: px(28),
     color: Colors.white,
     text_size: px(24),
     align_h: hmUI.align.CENTER_H,
     align_v: hmUI.align.CENTER_V,
     text_style: hmUI.text_style.NONE,
-	visible: false,
+	visible: true,
     show_level: hmUI.show_level.ONLY_NORMAL
 };
 
 // Xdrip modified to put ExternalStatusService.getLastStatusLineTime()
-export const AAPS_TIME_TEXT = {
-    x: px(27),
-    y: px(450),
-    w: px(129),
+export const XDRIP_TEXT2 = {
+    x: (DEVICE_WIDTH - XDRIP_TEXT2_W) / 2,
+    y: px(445),
+    w: XDRIP_TEXT2_W,
     h: px(27),
     color: Colors.defaultTransparent,
     text_size: px(24),
     align_h: hmUI.align.CENTER_H,
     align_v: hmUI.align.CENTER_V,
     text_style: hmUI.text_style.NONE,
-	visible: false,
+	visible: true,
     show_level: hmUI.show_level.ONLY_NORMAL
 };
 
@@ -245,7 +246,7 @@ export const PHONE_BATTERY_TEXT = {
     align_h: hmUI.align.LEFT,
     align_v: hmUI.align.TOP,
     text_style: hmUI.text_style.NONE,
-    show_level: hmUI.show_level.ONLY_NORMAL
+    show_level: hmUI.show_level.ONLY_NORMAL | hmUI.show_level.ONLY_EDIT
 };
 
 export const WATCH_BATTERY_TEXT = {
@@ -258,28 +259,28 @@ export const WATCH_BATTERY_TEXT = {
     align_h: hmUI.align.RIGHT,
     align_v: hmUI.align.TOP,
     text_style: hmUI.text_style.NONE,
-    show_level: hmUI.show_level.ONLY_NORMAL
+    show_level: hmUI.show_level.ONLY_NORMAL | hmUI.show_level.ONLY_EDIT
 };
 
 export const BG_STATUS_LOW_IMG = {
     x: px(44-44),
     y: px(105-10-3),
     src: 'watchdrip/bgLow.png',
-    show_level: hmUI.show_level.ONLY_NORMAL
+    show_level: hmUI.show_level.ONLY_NORMAL | hmUI.show_level.ONLY_EDIT
 };
 
 export const BG_STATUS_OK_IMG = {
     x: px(64-50),
     y: px(105-10-3),
     src: 'watchdrip/bgOk.png',
-    show_level: hmUI.show_level.ONLY_NORMAL
+    show_level: hmUI.show_level.ONLY_NORMAL | hmUI.show_level.ONLY_EDIT
 };
 
 export const BG_STATUS_HIGH_IMG = {
     x: px(142-44),
     y: px(105-10-3),
     src: 'watchdrip/bgHigh.png',
-    show_level: hmUI.show_level.ONLY_NORMAL
+    show_level: hmUI.show_level.ONLY_NORMAL | hmUI.show_level.ONLY_EDIT
 };
 
 export const IMG_STATUS_BT_DISCONNECTED = {
@@ -301,13 +302,27 @@ export const IMG_LOADING_PROGRESS = {
     show_level: hmUI.show_level.ONLY_NORMAL
 };
 
+export const CUSTOM_WIDGETS = {
+    NONE: 100001,
+    XDRIP_PREDICT_IOB: 100002,
+    XDRIP_PREDICT_BWP: 100003,
+    XDRIP_PREDICT_IOB_BWP: 100004,
+    XDRIP_TREATMENT: 100005,
+    XDRIP_TREATMENT_AND_TIME: 100006,
+    XDRIP_TREATMENT_TIME: 100007,
+    AAPS: 100008,
+    AAPS_AND_TIME: 100009,
+    AAPS_TIME: 100010,
+    GRAPH: 100011,
+    GRAPH_LOW_HIGH_LINES: 100012
+};
 
 // 100% edit mask
 export const EDIT_MASK_100 = {
     x: px(0),
     y: px(0),
-    w: px(194),
-    h: px(368),
+    w: px(192),
+    h: px(490),
     src: img('mask/mask100.png'),
     show_level: hmUI.show_level.ONLY_EDIT
 };
@@ -316,61 +331,99 @@ export const EDIT_MASK_100 = {
 export const EDIT_MASK_70 = {
     x: px(0),
     y: px(0),
-    w: px(194),
-    h: px(368),
+    w: px(192),
+    h: px(490),
     src: img('mask/mask70.png'),
     show_level: hmUI.show_level.ONLY_EDIT
 };
 
+const editGroupXdripTypes = [
+    {
+        type: CUSTOM_WIDGETS.XDRIP_PREDICT_IOB,
+        title_sc: 'xDrip predict IOB',
+        title_tc: 'xDrip predict IOB',
+        title_en: 'xDrip predict IOB',
+        preview: img('widgets/XDRIP_PREDICT_IOB.png')
+    },
+    {
+        type: CUSTOM_WIDGETS.XDRIP_PREDICT_BWP,
+        title_sc: 'xDrip predict BWP',
+        title_tc: 'xDrip predict BWP',
+        title_en: 'xDrip predict BWP',
+        preview: img('widgets/XDRIP_PREDICT_BWP.png')
+    },
+    {
+        type: CUSTOM_WIDGETS.XDRIP_PREDICT_IOB_BWP,
+        title_sc: 'xDrip predict IOB+BWP',
+        title_tc: 'xDrip predict IOB+BWP',
+        title_en: 'xDrip predict IOB+BWP',
+        preview: img('widgets/XDRIP_PREDICT_IOB_BWP.png')
+    },
+    {
+        type: CUSTOM_WIDGETS.XDRIP_TREATMENT,
+        title_sc: 'Treatment',
+        title_tc: 'Treatment',
+        title_en: 'Treatment',
+        preview: img('widgets/XDRIP_TREATMENT.png')
+    },
+    {
+        type: CUSTOM_WIDGETS.XDRIP_TREATMENT_AND_TIME,
+        title_sc: 'Treatment+time',
+        title_tc: 'Treatment+time',
+        title_en: 'Treatment+time',
+        preview: img('widgets/XDRIP_TREATMENT_AND_TIME.png')
+    },
+    {
+        type: CUSTOM_WIDGETS.XDRIP_TREATMENT_TIME,
+        title_sc: 'Treatment time',
+        title_tc: 'Treatment time',
+        title_en: 'Treatment time',
+        preview: img('widgets/XDRIP_TREATMENT_TIME.png')
+    },
+    {
+        type: CUSTOM_WIDGETS.AAPS,
+        title_sc: 'AAPS IOB/COB',
+        title_tc: 'AAPS IOB/COB',
+        title_en: 'AAPS IOB/COB',
+        preview: img('widgets/AAPS.png')
+    },
+    {
+        type: CUSTOM_WIDGETS.AAPS_AND_TIME,
+        title_sc: 'AAPS IOB/COB+time',
+        title_tc: 'AAPS IOB/COB+time',
+        title_en: 'AAPS IOB/COB+time',
+        preview: img('widgets/AAPS_AND_TIME.png')
+    },
+    {
+        type: CUSTOM_WIDGETS.AAPS_TIME,
+        title_sc: 'AAPS IOB/COB time',
+        title_tc: 'AAPS IOB/COB time',
+        title_en: 'AAPS IOB/COB time',
+        preview: img('widgets/AAPS_TIME.png')
+    },
+    {
+        type: CUSTOM_WIDGETS.NONE,
+        title_sc: 'None',
+        title_tc: 'None',
+        title_en: 'None',
+        preview: img('widgets/empty.png')
+    }
+];
 
 // BEGIN edit group treatments aaps/xdrip data
-export const CUSTOM_WIDGETS = {
-    NONE: 100001,
-    XDRIP: 100002,
-    AAPS: 100003
+export const EDIT_GROUP_XDRIP = {
+    edit_id: 105,
+    y: px(403),
+    optional_types: editGroupXdripTypes,
+    count: editGroupXdripTypes.length,
+    default_type: CUSTOM_WIDGETS.XDRIP_PREDICT_IOB_BWP
 };
 
-export const EDIT_GROUP_AAPS_XDRIP = {
-    edit_id: 105,
-    x: px(20),
-    y: px(430),
-    w: px(148),
-    h: px(36),
-    select_image: img('mask/select-wide.png'),
-    un_select_image: img('mask/un_select-wide.png'),
-    optional_types: [
-        {
-            type: CUSTOM_WIDGETS.XDRIP,
-            title_sc: 'xDrip+ default treatments data',
-            title_tc: 'xDrip+ default treatments data',
-            title_en: 'xDrip+ default treatments data',
-            preview: img('widgets/xdrip.png')
-        },
-        {
-            type: CUSTOM_WIDGETS.AAPS,
-            title_sc: 'AAPS IOB/COB data',
-            title_tc: 'AAPS IOB/COB data',
-            title_en: 'AAPS IOB/COB data',
-            preview: img('widgets/aaps.png')
-        },
-        // custom empty widget, nothing is rendered
-        {
-            type: CUSTOM_WIDGETS.NONE,
-            title_sc: 'None (empty space)',
-            title_tc: 'None (empty space)',
-            title_en: 'None (empty space)',
-            preview: img('widgets/empty.png')
-        }
-    ],
-    count: 3,
-    default_type: CUSTOM_WIDGETS.XDRIP,
-    tips_BG: img('mask/text_tag-wide.png'),
-    tips_width: 148,
-    tips_margin: 1, // optional, default value: 0,
-    tips_x: -13,
-    tips_y: -32,
-    show_level: hmUI.show_level.ONLY_NORMAL | hmUI.show_level.ONLY_EDIT
-};
+export const EDIT_GROUP_XDRIP2 = {
+    edit_id: 106,
+    y: px(440),
+    default_type: CUSTOM_WIDGETS.XDRIP_TREATMENT_AND_TIME
+}
 // END edit group treatments aaps/xdrip data
 
 
@@ -441,12 +494,31 @@ const editGroupTypes = [
     // custom empty widget, nothing is rendered
     {
         type: CUSTOM_WIDGETS.NONE,
-        title_sc: 'None (empty space)',
-        title_tc: 'None (empty space)',
-        title_en: 'None (empty space)',
+        title_sc: 'None',
+        title_tc: 'None',
+        title_en: 'None',
         preview: img('widgets/empty.png')
     }
 ];
+
+const editGroupTypesLarge = editGroupTypes.concat(
+    [
+        {
+            type: CUSTOM_WIDGETS.GRAPH_LOW_HIGH_LINES,
+            title_sc: 'xDrip graph low/high lines',
+            title_tc: 'xDrip graph low/high lines',
+            title_en: 'xDrip graph low/high lines',
+            preview: img('widgets/GRAPH_LOW_HIGH_LINES.png')
+        },
+        {
+            type: CUSTOM_WIDGETS.GRAPH,
+            title_sc: 'xDrip graph',
+            title_tc: 'xDrip graph',
+            title_en: 'xDrip graph',
+            preview: img('widgets/GRAPH.png')
+        }
+    ]
+);
 
 export const EDIT_GROUP_DEFAULTS = {
     w: px(editWidgetW),
@@ -456,13 +528,16 @@ export const EDIT_GROUP_DEFAULTS = {
     optional_types: editGroupTypes,
     count: editGroupTypes.length,
     tips_BG: img('mask/text_tag.png'),
-    tips_width: 78,
-    tips_margin: 10, // optional, default value: 0
+    tips_x: -35,
+    tips_y: -45,
+    tips_width: 88,
+    tips_margin: 1, // optional, default value: 0
     show_level: hmUI.show_level.ONLY_NORMAL | hmUI.show_level.ONLY_EDIT
 };
 
 export const EDIT_GROUP_W_DEFAULTS = {
-    w: px(148),
+    x: px(18),
+    w: px(151),
     h: px(36),
     select_image: img('mask/select-wide.png'),
     un_select_image: img('mask/un_select-wide.png'),
@@ -470,8 +545,10 @@ export const EDIT_GROUP_W_DEFAULTS = {
     count: editGroupTypes.length,
     tips_BG: img('mask/text_tag-wide.png'),
     tips_width: 148,
-    tips_margin: 1, // optional, default value: 0
-    show_level: hmUI.show_level.ONLY_NORMAL | hmUI.show_level.ONLY_EDIT
+    tips_margin: 2, // optional, default value: 0
+    show_level: hmUI.show_level.ONLY_NORMAL | hmUI.show_level.ONLY_EDIT,
+    tips_x: 0,
+    tips_y: -45
 };
 
 // Default styles for all IMG widgets 
@@ -521,15 +598,13 @@ export const EDIT_DEFAULT_TEXT_IMG = {
 
 
 // BEGIN Top Edit Widgets
-const topX = 110+10+5;
+const topX = 124;
 const topY = 110;
 
 export const EDIT_TOP_GROUP = {
     edit_id: 101,
     x: px(topX),
     y: px(topY),
-    tips_x: -20,
-    tips_y: -45,
     default_type: hmUI.edit_type.HEART
 }; 
 
@@ -563,57 +638,60 @@ export const EDIT_TOP_TEXT_IMG = {
 
 
 // BEGIN Wide Edit Widgets
-const wideX = 25;
-const wideY = 335;
+const largeX = 65;
+const largeY = 340;
 
-export const EDIT_WIDE_GROUP = {
+export const EDIT_LARGE_GROUP = {
     edit_id: 102,
-    x: px(wideX),
-    y: px(wideY),
-    tips_x: -25,
-    tips_y: -45,
-    default_type: hmUI.edit_type.STEP
-}; 
+    select_image: img('mask/select-large.png'),
+    un_select_image: img('mask/un_select-large.png'),
+    y: px(328),
+    w: px(149),
+    h: px(72),
+    optional_types: editGroupTypesLarge,
+    count: editGroupTypesLarge.length,
+    default_type: CUSTOM_WIDGETS.GRAPH_LOW_HIGH_LINES,
+};
 
 // Default styles for all Wide IMG widgets
-export const EDIT_WIDE_IMG = {
-    x: px(wideX),
-    y: px(wideY)
+const LARGE_IMAGE_Y_SHIFT = 30;
+
+export const EDIT_LARGE_IMG = {
+    x: px(largeX),
+    y: px(largeY + LARGE_IMAGE_Y_SHIFT)
 };
 
 // Styles for all Wide ARC_PROGRESS widgets
-const EDIT_WIDE_ARC_PROGRESS_LEFT = {
-    center_x: px(wideX + editWidgetArcRadius + editWidgetArcMarginX + (editWidgetArcLineWidth / 2)),
-    center_y: px(wideY + editWidgetArcRadius + editWidgetArcMarginTop + (editWidgetArcLineWidth / 2))
+const EDIT_LARGE_ARC_PROGRESS_LEFT = {
+    center_x: px(largeX + editWidgetArcRadius + editWidgetArcMarginX + (editWidgetArcLineWidth / 2)),
+    center_y: px(largeY + LARGE_IMAGE_Y_SHIFT + editWidgetArcRadius + editWidgetArcMarginTop + (editWidgetArcLineWidth / 2))
 };
 // Styles for all Wide ARC_PROGRESS Right widgets
-const EDIT_WIDE_ARC_PROGRESS_RIGHT = {
-    center_x: px(wideX + editWidgetArcRadius + (2 * editWidgetArcMarginX) + editWidgetIconWidth + (editWidgetArcLineWidth / 2) + 1),
-    center_y: px(wideY + editWidgetArcRadius + editWidgetArcMarginTop + (editWidgetArcLineWidth / 2))
+const EDIT_LARGE_ARC_PROGRESS_RIGHT = {
+    center_x: px(largeX + editWidgetArcRadius + (2 * editWidgetArcMarginX) + editWidgetIconWidth + (editWidgetArcLineWidth / 2) + 1),
+    center_y: px(largeY + LARGE_IMAGE_Y_SHIFT + editWidgetArcRadius + editWidgetArcMarginTop + (editWidgetArcLineWidth / 2))
 };
-export const EDIT_WIDE_ARC_PROGRESS = {
-    left: EDIT_WIDE_ARC_PROGRESS_LEFT,
-    right: EDIT_WIDE_ARC_PROGRESS_RIGHT
+export const EDIT_LARGE_ARC_PROGRESS = {
+    left: EDIT_LARGE_ARC_PROGRESS_LEFT,
+    right: EDIT_LARGE_ARC_PROGRESS_RIGHT
 };
 
 // Styles for all Wide TEXT_IMG widgets
-export const EDIT_WIDE_TEXT_IMG = {
-    x: px(wideX + editWidgetIconWidth + editWidgetIconMargin+40),
-    y: px(wideY)
+export const EDIT_LARGE_TEXT_IMG = {
+    x: px(largeX),
+    y: px(largeY)
 };
 // END Wide Edit Widgets
 
 
 // BEGIN Bottom Edit Widgets
-const bottomX = 110+10+5;
+const bottomX = 124;
 const bottomY = 190;
 
 export const EDIT_BOTTOM_GROUP = {
     edit_id: 103,
     x: px(bottomX),
     y: px(bottomY),
-    tips_x: 0,
-    tips_y: 75,
     default_type: hmUI.edit_type.WEATHER
 }; 
 
@@ -644,48 +722,6 @@ export const EDIT_BOTTOM_TEXT_IMG = {
     y: px(bottomY + editWidgetIconHeight + editWidgetIconMargin)
 };
 // END Bottom Edit Widgets
-
-
-// BEGIN Bottom Right Edit Widgets
-/*const bottomRightX = 139;
-const bottomRightY = 195;
-
-export const EDIT_BOTTOM_RIGHT_GROUP = {
-    edit_id: 104,
-    x: px(bottomRightX),
-    y: px(bottomRightY),
-    tips_x: -25,
-    tips_y: 75,
-    default_type: hmUI.edit_type.DISTANCE
-}; 
-
-// Styles for all Bottom Right IMG widgets
-export const EDIT_BR_IMG = {
-    x: px(bottomRightX),
-    y: px(bottomRightY)
-};
-
-// Styles for all Bottom Right ARC_PROGRESS widgets
-const EDIT_BR_ARC_PROGRESS_LEFT = {
-    center_x: px(bottomRightX + editWidgetArcRadius + editWidgetArcMarginX + (editWidgetArcLineWidth / 2)),
-    center_y: px(bottomRightY + editWidgetArcRadius + editWidgetArcMarginTop + (editWidgetArcLineWidth / 2))
-};
-// Styles for all Bottom Right ARC_PROGRESS Right widgets
-const EDIT_BR_ARC_PROGRESS_RIGHT = {
-    center_x: px(bottomRightX + editWidgetArcRadius + (2 * editWidgetArcMarginX) + editWidgetIconWidth + (editWidgetArcLineWidth / 2) + 1),
-    center_y: px(bottomRightY + editWidgetArcRadius + editWidgetArcMarginTop + (editWidgetArcLineWidth / 2))
-};
-export const EDIT_BR_ARC_PROGRESS = {
-    left: EDIT_BR_ARC_PROGRESS_LEFT,
-    right: EDIT_BR_ARC_PROGRESS_RIGHT
-};
-
-// Styles for all Bottom Right TEXT_IMG widgets
-export const EDIT_BR_TEXT_IMG = {
-    x: px(bottomRightX),
-    y: px(bottomRightY + editWidgetIconHeight + editWidgetIconMargin)
-};*/
-// END Bottom Right Edit Widgets
 
 
 // BEGIN Edit Widgets
@@ -865,12 +901,12 @@ export const EDIT_HUMIDITY_TEXT_IMG = {
 };
 
 export const GRAPH_SETTINGS = {
-    x: px(300),
-    y: px(0),
-    w: px(190),
-    h: px(60),
-    point_size: 8,
-    treatment_point_size: 12,
+    x: 1,
+    y: 328,
+    w: 192,
+    h: 110,
+    point_size: 6,
+    treatment_point_size: 10,
     line_size: 3
 };
 

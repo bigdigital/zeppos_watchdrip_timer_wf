@@ -131,6 +131,18 @@
       },
       "platforms": [
         {
+          "name": "amazfit-band7-nfc",
+          "deviceSource": 252
+        },
+        {
+          "name": "amazfit-band7",
+          "deviceSource": 253
+        },
+        {
+          "name": "amazfit-band7-w",
+          "deviceSource": 254
+        },
+        {
           "name": "l66",
           "deviceSource": 260
         },

@@ -15,9 +15,6 @@ export class ExternalData {
     }
 
     getTime() {
-        if (this.time === null || this.time === undefined) {
-            return -1;
-        }
         return this.time;
     }
 

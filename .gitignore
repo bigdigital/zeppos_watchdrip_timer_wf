@@ -13,3 +13,6 @@ selenium-debug.log
 *.ntvs*
 *.njsproj
 *.sln
+/assets/mi-band7/images/preview.psd
+/assets/mi-band7/images/mask/select-wide.psd
+/assets/mi-band7/images/mask/text_tag.psd

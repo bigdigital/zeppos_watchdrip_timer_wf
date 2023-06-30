@@ -38,6 +38,9 @@ export class TreatmentData {
         return treatmentText;
     }
 
+    getTime() {
+        return this.time;
+    }
 
     static createEmpty() {
         if (TEST_DATA){

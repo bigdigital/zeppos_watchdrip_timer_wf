@@ -13,7 +13,12 @@ export class Graph {
         this.yBound = this.y + height;
         this.widgets = [];
         this.globalNS = getGlobal();
+        this.visibility = true;
         debug = this.globalNS.debug;
+    }
+
+    setVisibility(visibility){
+        this.visibility = visibility;
     }
 
     setLines(lines) {

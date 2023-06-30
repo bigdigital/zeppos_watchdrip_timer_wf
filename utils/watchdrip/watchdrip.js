@@ -78,7 +78,7 @@ export class Watchdrip {
         this.createWatchdripDir();
         this.updateIntervals = this.getUpdateInterval();
         this.readInfo();
-        this.updateValuesWidget();
+        this.updateWidgets();
         //Monitor watchface activity in order to recreate connection
         if (this.isAOD()) {
             this.widgetDelegateCallbackResumeCall();
@@ -322,6 +322,10 @@ export class Watchdrip {
         if (this.graph == null || this.isAOD()) {
             return;
         }
+        if (!this.graph.visibility) {
+            this.graph.clear();
+            return;
+        }
 
         let graphInfo = this.watchdripData.getGraph();
         if (graphInfo.start === "") {
@@ -334,7 +338,7 @@ export class Watchdrip {
         let lines = {};
         graphInfo.lines.forEach(line => {
             let name = line.name;
-            if (name in this.graphLineStyles) {
+            if (name && name in this.graphLineStyles) {
                 let lineStyle = this.graphLineStyles[name];
                 //if image not defined, use default line color
                 if (lineStyle.color === "" && lineStyle.imageFile === "") {

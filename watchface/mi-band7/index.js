@@ -23,17 +23,16 @@ import {
     IMG_STATUS_BT_DISCONNECTED,
     PHONE_BATTERY_TEXT,
     WATCH_BATTERY_TEXT,
-    AAPS_TEXT,
-    AAPS_TIME_TEXT,
+    XDRIP_TEXT1,
+    XDRIP_TEXT2,
     // Edit masks
     EDIT_MASK_70,
     EDIT_MASK_100,
-    // xdrip or aaps treatments formatting edit group
-    EDIT_GROUP_AAPS_XDRIP,
+    EDIT_GROUP_XDRIP,
     CUSTOM_WIDGETS,
     // Default edit group styles
     EDIT_GROUP_DEFAULTS,
-	EDIT_GROUP_W_DEFAULTS,
+    EDIT_GROUP_W_DEFAULTS,
     EDIT_DEFAULT_IMG,
     EDIT_DEFAULT_ARC_PROGRESS,
     EDIT_DEFAULT_TEXT_IMG,
@@ -43,20 +42,15 @@ import {
     EDIT_TOP_ARC_PROGRESS,
     EDIT_TOP_TEXT_IMG,
     // Top Wide Group
-    EDIT_WIDE_GROUP,
-    EDIT_WIDE_IMG,
-    EDIT_WIDE_ARC_PROGRESS,
-    EDIT_WIDE_TEXT_IMG,
+    EDIT_LARGE_GROUP,
+    EDIT_LARGE_IMG,
+    EDIT_LARGE_ARC_PROGRESS,
+    EDIT_LARGE_TEXT_IMG,
     // Bottom Edit Group
     EDIT_BOTTOM_GROUP,
     EDIT_BOTTOM_IMG,
     EDIT_BOTTOM_ARC_PROGRESS,
     EDIT_BOTTOM_TEXT_IMG,
-    // Bottom Right Edit Group
-    //EDIT_BOTTOM_RIGHT_GROUP,
-    //EDIT_BR_IMG,
-    //EDIT_BR_ARC_PROGRESS,
-    //EDIT_BR_TEXT_IMG,
     // Editable Widgets specific styles
     EDIT_HEART_IMG,
     EDIT_HEART_IMG_LEVEL,
@@ -90,13 +84,14 @@ import {
     EDIT_HUMIDITY_IMG,
     EDIT_HUMIDITY_ARC_PROGRESS,
     EDIT_HUMIDITY_TEXT_IMG,
-    GRAPH_SETTINGS
+    GRAPH_SETTINGS, EDIT_GROUP_XDRIP2
 } from "./styles";
 import {BG_IMG, BG_FILL_RECT} from "../../utils/config/styles_global";
-import {PROGRESS_ANGLE_INC, PROGRESS_UPDATE_INTERVAL_MS, TEST_DATA} from "../../utils/config/constants";
+import {Colors, PROGRESS_ANGLE_INC, PROGRESS_UPDATE_INTERVAL_MS, TEST_DATA} from "../../utils/config/constants";
+import {DEVICE_HEIGHT, DEVICE_WIDTH} from "../../utils/config/device";
 
 let bgValNoDataTextWidget, bgValTextImgWidget, bgValTimeTextWidget, bgDeltaTextWidget, bgTrendImageWidget, bgStaleLine, 
-    phoneBattery, watchBattery, bgStatusLow, bgStatusOk, bgStatusHigh, progress, editGroupAAPSxDrip, aapsText, aapsTimeText;
+    phoneBattery, watchBattery, bgStatusLow, bgStatusOk, bgStatusHigh, progress,editGroupLarge, editGroupxDrip1,editGroupxDrip2, xDripText1, xDripText2;
 
 let batterySensor;
 
@@ -144,10 +139,55 @@ function updateWidgets() {
     }
 }
 
+
 function mergeStyles(styleObj1, styleObj2, styleObj3 = {}) {
     return Object.assign({}, styleObj1, styleObj2, styleObj3);
 }
-
+function updatexDripGroupWidgets(textWidget, editType, watchdripData) {
+    if (editType === CUSTOM_WIDGETS.NONE){
+        return;
+    }
+    const treatmentObj = watchdripData.getTreatment();
+    const externalStatusObj = watchdripData.getExternal();
+    let text = "";
+    switch (editType) {
+        case CUSTOM_WIDGETS.XDRIP_PREDICT_IOB:
+            text= treatmentObj.getPredictIOB();
+            break;
+        case CUSTOM_WIDGETS.XDRIP_PREDICT_BWP:
+            text = treatmentObj.getPredictBWP();
+            break;
+        case CUSTOM_WIDGETS.XDRIP_PREDICT_IOB_BWP:
+            text = treatmentObj.getPredictIOB() + " " + treatmentObj.getPredictBWP();
+            break;
+        case CUSTOM_WIDGETS.XDRIP_TREATMENT:
+            text = treatmentObj.getTreatments();
+            break;
+        // default xDrip data
+        case CUSTOM_WIDGETS.XDRIP_TREATMENT_AND_TIME:
+            let treatmentsText = treatmentObj.getTreatments();
+            if (treatmentsText !== "") {
+                text = treatmentsText + " " + watchdripData.getTimeAgo(treatmentObj.time);
+            }
+            break;
+        case CUSTOM_WIDGETS.XDRIP_TREATMENT_TIME:
+            let treatmentsText3 = treatmentObj.getTreatments();
+            if (treatmentsText3 !== "") {
+                text = watchdripData.getTimeAgo(treatmentObj.time);
+            }
+            break;
+        case CUSTOM_WIDGETS.AAPS:
+            text = externalStatusObj.getStatusLine();
+            break;
+        case CUSTOM_WIDGETS.AAPS_AND_TIME:
+            text = externalStatusObj.getStatusLine() + " " +  watchdripData.getTimeAgo(externalStatusObj.getTime());
+            break;
+        case CUSTOM_WIDGETS.AAPS_TIME:
+            text = watchdripData.getTimeAgo(externalStatusObj.getTime());
+            break;
+    }
+    textWidget.setProperty(hmUI.prop.TEXT, text);
+}
 
 WatchFace({
     // draws the editable widgets
@@ -216,11 +256,8 @@ WatchFace({
                 hmUI.createWidget(hmUI.widget.ARC_PROGRESS, mergeStyles(EDIT_DEFAULT_ARC_PROGRESS.left, arcProgressStyle.left, EDIT_HUMIDITY_ARC_PROGRESS));
                 hmUI.createWidget(hmUI.widget.ARC_PROGRESS, mergeStyles(EDIT_DEFAULT_ARC_PROGRESS.right, arcProgressStyle.right, EDIT_HUMIDITY_ARC_PROGRESS));
                 hmUI.createWidget(hmUI.widget.TEXT_IMG, mergeStyles(EDIT_DEFAULT_TEXT_IMG, textImgStyle, EDIT_HUMIDITY_TEXT_IMG));
-                break;    
-            case CUSTOM_WIDGETS.NONE:
-                // empty widget, render nothing
-                break;            
-        };
+                break;
+        }
     },
 
     // Init View
@@ -234,7 +271,7 @@ WatchFace({
             const imgBg = hmUI.createWidget(hmUI.widget.IMG, BG_IMG);
 
             const digitalClock = hmUI.createWidget(hmUI.widget.IMG_TIME, DIGITAL_TIME);
-        };
+        }
 
         const daysImg = hmUI.createWidget(hmUI.widget.IMG_WEEK, WEEK_DAYS_IMG);
 
@@ -254,32 +291,25 @@ WatchFace({
         const mask = hmUI.createWidget(hmUI.widget.WATCHFACE_EDIT_FG_MASK, EDIT_MASK_70);
         // Top Left editable widget
         const editGroupTop = hmUI.createWidget(hmUI.widget.WATCHFACE_EDIT_GROUP, mergeStyles(EDIT_GROUP_DEFAULTS, EDIT_TOP_GROUP));
-        const editTopType = editGroupTop.getProperty(hmUI.prop.CURRENT_TYPE);
-        this.drawWidget(EDIT_TOP_IMG, EDIT_TOP_ARC_PROGRESS, EDIT_TOP_TEXT_IMG, editTopType);
+        this.drawWidget(EDIT_TOP_IMG, EDIT_TOP_ARC_PROGRESS, EDIT_TOP_TEXT_IMG, editGroupTop.getProperty(hmUI.prop.CURRENT_TYPE));
         // Wide editable widget
-        const editGroupWide = hmUI.createWidget(hmUI.widget.WATCHFACE_EDIT_GROUP, mergeStyles(EDIT_GROUP_W_DEFAULTS, EDIT_WIDE_GROUP));
-        const editWideType = editGroupWide.getProperty(hmUI.prop.CURRENT_TYPE);
-        this.drawWidget(EDIT_WIDE_IMG, EDIT_WIDE_ARC_PROGRESS, EDIT_WIDE_TEXT_IMG, editWideType);
+        editGroupLarge = hmUI.createWidget(hmUI.widget.WATCHFACE_EDIT_GROUP, mergeStyles(EDIT_GROUP_W_DEFAULTS, EDIT_LARGE_GROUP));
+        this.drawWidget(EDIT_LARGE_IMG, EDIT_LARGE_ARC_PROGRESS, EDIT_LARGE_TEXT_IMG, editGroupLarge.getProperty(hmUI.prop.CURRENT_TYPE));
         // Bottom editable widget
         const editGroupBottom = hmUI.createWidget(hmUI.widget.WATCHFACE_EDIT_GROUP, mergeStyles(EDIT_GROUP_DEFAULTS, EDIT_BOTTOM_GROUP));
-        const editBottomType = editGroupBottom.getProperty(hmUI.prop.CURRENT_TYPE);
-        this.drawWidget(EDIT_BOTTOM_IMG, EDIT_BOTTOM_ARC_PROGRESS, EDIT_BOTTOM_TEXT_IMG, editBottomType);
-        // Bottom Right editable widget
-        //const editGroupBottomRight = hmUI.createWidget(hmUI.widget.WATCHFACE_EDIT_GROUP, mergeStyles(EDIT_GROUP_DEFAULTS, EDIT_BOTTOM_RIGHT_GROUP));
-        //const editBottomRightType = editGroupBottomRight.getProperty(hmUI.prop.CURRENT_TYPE);
-        //this.drawWidget(EDIT_BR_IMG, EDIT_BR_ARC_PROGRESS, EDIT_BR_TEXT_IMG, editBottomRightType);
+        this.drawWidget(EDIT_BOTTOM_IMG, EDIT_BOTTOM_ARC_PROGRESS, EDIT_BOTTOM_TEXT_IMG, editGroupBottom.getProperty(hmUI.prop.CURRENT_TYPE));
         
-        // xdrip or aaps treatments formatting edit group
-        editGroupAAPSxDrip = hmUI.createWidget(hmUI.widget.WATCHFACE_EDIT_GROUP, EDIT_GROUP_AAPS_XDRIP);
+        // xdrip formatting edit groups
+        editGroupxDrip1 = hmUI.createWidget(hmUI.widget.WATCHFACE_EDIT_GROUP, mergeStyles(EDIT_GROUP_W_DEFAULTS, EDIT_GROUP_XDRIP));
+        editGroupxDrip2 = hmUI.createWidget(hmUI.widget.WATCHFACE_EDIT_GROUP, mergeStyles(EDIT_GROUP_W_DEFAULTS,EDIT_GROUP_XDRIP, EDIT_GROUP_XDRIP2));
         // END editable components init
-
 
         //init watchdrip related widgets
         if (screenType === hmSetting.screen_type.AOD) {
             bgValTextImgWidget = hmUI.createWidget(hmUI.widget.TEXT_IMG, mergeStyles(BG_VALUE_TEXT_IMG, BG_VALUE_TEXT_IMG_AOD));
         } else {
             bgValTextImgWidget = hmUI.createWidget(hmUI.widget.TEXT_IMG, BG_VALUE_TEXT_IMG);
-        };
+        }
         bgValNoDataTextWidget = hmUI.createWidget(hmUI.widget.TEXT, BG_VALUE_NO_DATA_TEXT);
         bgValTimeTextWidget = hmUI.createWidget(hmUI.widget.TEXT, BG_TIME_TEXT);
         bgDeltaTextWidget = hmUI.createWidget(hmUI.widget.TEXT, BG_DELTA_TEXT);
@@ -290,12 +320,16 @@ WatchFace({
         bgStatusOk = hmUI.createWidget(hmUI.widget.IMG, BG_STATUS_OK_IMG);
         bgStatusHigh = hmUI.createWidget(hmUI.widget.IMG, BG_STATUS_HIGH_IMG);
         progress = hmUI.createWidget(hmUI.widget.IMG, IMG_LOADING_PROGRESS);
-        stopLoader();
+
         // From modified xDrip ExternalStatusService.getLastStatusLine()
-        aapsText = hmUI.createWidget(hmUI.widget.TEXT, AAPS_TEXT);
+        xDripText1 = hmUI.createWidget(hmUI.widget.TEXT, XDRIP_TEXT1);
         // From modified xDrip ExternalStatusService.getLastStatusLineTime()
-        aapsTimeText = hmUI.createWidget(hmUI.widget.TEXT, AAPS_TIME_TEXT);
+        xDripText2 = hmUI.createWidget(hmUI.widget.TEXT, XDRIP_TEXT2);
+        stopLoader();
+        updateWidgets();
     },
+
+
     updateStart() {
         bgValTimeTextWidget.setProperty(hmUI.prop.VISIBLE, false);
         bgDeltaTextWidget.setProperty(hmUI.prop.VISIBLE, false);
@@ -324,13 +358,13 @@ WatchFace({
             if (bgObj.isHigh || bgObj.isLow) {
                 if (bgObj.isHigh) {
                     bgStatusHigh.setProperty(hmUI.prop.VISIBLE, true);
-                };
+                }
                 if (bgObj.isLow) {
                     bgStatusLow.setProperty(hmUI.prop.VISIBLE, true);
-                };
+                }
             } else {
                 bgStatusOk.setProperty(hmUI.prop.VISIBLE, true);
-            };
+            }
             
             bgValTextImgWidget.setProperty(hmUI.prop.TEXT, bgObj.getBGVal());
             bgValTextImgWidget.setProperty(hmUI.prop.VISIBLE, true);
@@ -339,7 +373,7 @@ WatchFace({
         } else {
             bgValNoDataTextWidget.setProperty(hmUI.prop.VISIBLE, true);
             bgValTextImgWidget.setProperty(hmUI.prop.VISIBLE, false);
-        };
+        }
 
         bgDeltaTextWidget.setProperty(hmUI.prop.TEXT, bgObj.delta);
 
@@ -347,24 +381,8 @@ WatchFace({
 
         phoneBattery.setProperty(hmUI.prop.TEXT, watchdripData.getStatus().getBatVal());
 
-        // treatments formatting according to user selection
-        const editTypeAAPSxDrip = editGroupAAPSxDrip.getProperty(hmUI.prop.CURRENT_TYPE);
-        switch (editTypeAAPSxDrip) {
-            // default xDrip data
-            case CUSTOM_WIDGETS.XDRIP:
-                const treatmentObj = watchdripData.getTreatment();
-                aapsText.setProperty(hmUI.prop.TEXT, treatmentObj.getPredictIOB());
-                break;
-            // Fill data from modified xDrip ExternalStatusService.getLastStatusLine()    
-            case CUSTOM_WIDGETS.AAPS:
-                const externalStatusObj = watchdripData.getExternal();
-                aapsText.setProperty(hmUI.prop.TEXT, externalStatusObj.getStatusLine());
-                break;
-            // Show nothing
-            case CUSTOM_WIDGETS.NONE:
-                aapsText.setProperty(hmUI.prop.VISIBLE, false);
-                break;
-        };
+        updatexDripGroupWidgets(xDripText1,editGroupxDrip1.getProperty(hmUI.prop.CURRENT_TYPE), watchdripData);
+        updatexDripGroupWidgets(xDripText2,editGroupxDrip2.getProperty(hmUI.prop.CURRENT_TYPE), watchdripData);
 
         if (TEST_DATA) {
             bgStatusLow.setProperty(hmUI.prop.VISIBLE, true);
@@ -384,28 +402,8 @@ WatchFace({
 
         bgStaleLine.setProperty(hmUI.prop.VISIBLE, watchdripData.isBgStale());
 
-        // treatments formatting according to user selection
-        const editTypeAAPSxDrip = editGroupAAPSxDrip.getProperty(hmUI.prop.CURRENT_TYPE);
-        switch (editTypeAAPSxDrip) {
-            // default xDrip data
-            case CUSTOM_WIDGETS.XDRIP:
-                const treatmentObj = watchdripData.getTreatment();
-                let treatmentsText = treatmentObj.getTreatments();
-                if (treatmentsText !== "") {
-                    treatmentsText = treatmentsText + " " + watchdripData.getTimeAgo(treatmentObj.time);
-                };
-                aapsTimeText.setProperty(hmUI.prop.TEXT, treatmentsText);
-                break;
-            // Fill data from modified xDrip ExternalStatusService.getLastStatusLine()    
-            case CUSTOM_WIDGETS.AAPS:
-                const externalStatusObj = watchdripData.getExternal();
-                aapsTimeText.setProperty(hmUI.prop.TEXT, watchdripData.getTimeAgo(externalStatusObj.time));
-                break;
-            // Show nothing
-            case CUSTOM_WIDGETS.NONE:
-                aapsTimeText.setProperty(hmUI.prop.VISIBLE, false);
-                break;    
-        };
+        updatexDripGroupWidgets(xDripText1,editGroupxDrip1.getProperty(hmUI.prop.CURRENT_TYPE), watchdripData);
+        updatexDripGroupWidgets(xDripText2,editGroupxDrip2.getProperty(hmUI.prop.CURRENT_TYPE), watchdripData);
     },
 
     onInit() {
@@ -427,8 +425,9 @@ WatchFace({
                     watchdrip.setOnUpdateStartCallback(this.updateStart);
                     watchdrip.setOnUpdateFinishCallback(this.updateFinish);
 
-
                     //graph configuration
+                    let largeGroupType = editGroupLarge.getProperty(hmUI.prop.CURRENT_TYPE);
+
                     let lineStyles = {};
                     const POINT_SIZE = GRAPH_SETTINGS.point_size
                     const TREATMENT_POINT_SIZE = GRAPH_SETTINGS.treatment_point_size
@@ -437,12 +436,32 @@ WatchFace({
                     lineStyles['high'] = new PointStyle(POINT_SIZE, POINT_SIZE, POINT_SIZE);
                     lineStyles['low'] = new PointStyle(POINT_SIZE, POINT_SIZE, POINT_SIZE);
                     lineStyles['inRange'] = new PointStyle(POINT_SIZE, POINT_SIZE, POINT_SIZE);
-                    lineStyles['lineLow'] = new PointStyle("", LINE_SIZE);
-                    lineStyles['lineHigh'] = new PointStyle("", LINE_SIZE);
+                    if (largeGroupType === CUSTOM_WIDGETS.GRAPH_LOW_HIGH_LINES) {
+                        lineStyles['lineLow'] = new PointStyle("", LINE_SIZE);
+                        lineStyles['lineHigh'] = new PointStyle("", LINE_SIZE);
+                    }
                     lineStyles['treatment'] = new PointStyle(TREATMENT_POINT_SIZE, TREATMENT_POINT_SIZE);
 
+                    var RECT = {
+                        x: GRAPH_SETTINGS.x,
+                        y: GRAPH_SETTINGS.y,
+                        w: GRAPH_SETTINGS.w,
+                        h: GRAPH_SETTINGS.h,
+                        color: Colors.accent,
+                    }
+                    // hmUI.createWidget(hmUI.widget.FILL_RECT, RECT);
                     watchdrip.createGraph(GRAPH_SETTINGS.x,GRAPH_SETTINGS.y,GRAPH_SETTINGS.w,GRAPH_SETTINGS.h, lineStyles);
+                    if (largeGroupType !== CUSTOM_WIDGETS.GRAPH && largeGroupType !== CUSTOM_WIDGETS.GRAPH_LOW_HIGH_LINES) {
+                        watchdrip.graph.setVisibility(false);
+                    }
 
+                    if (editGroupxDrip1.getProperty(hmUI.prop.CURRENT_TYPE) === CUSTOM_WIDGETS.NONE){
+                        xDripText1.setProperty(hmUI.prop.VISIBLE, false);
+                    }
+
+                    if (editGroupxDrip2.getProperty(hmUI.prop.CURRENT_TYPE) === CUSTOM_WIDGETS.NONE){
+                        xDripText2.setProperty(hmUI.prop.VISIBLE, false);
+                    }
 
                     watchdrip.start();
                 }

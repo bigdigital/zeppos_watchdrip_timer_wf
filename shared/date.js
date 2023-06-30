@@ -34,19 +34,19 @@ export function niceTime(t) {
     if (t > 59) {
         unit = 'min';
         t = t / 60;
-        if (t != 1) unit = 'mins';
+        if (t !== 1) unit = 'mins';
         if (t > 59) {
             unit = 'hour';
             t = t / 60;
-            if (t != 1) unit = 'hours';
+            if (t !== 1) unit = 'hours';
             if (t > 24) {
                 unit = 'day';
                 t = t / 24;
-                if (t != 1) unit = 'days';
+                if (t !== 1) unit = 'days';
                 if (t > 28) {
                     unit = 'week';
                     t = t / 7;
-                    if (t != 1) unit = 'weeks';
+                    if (t !== 1) unit = 'weeks';
                 }
             }
         }
