@@ -12,7 +12,7 @@
     "description": "timer watchface",
     "icon": "images/preview.png"
   },
-  "permissions": ["gps"],
+  "permissions": [],
   "runtime": {
     "apiVersion": {
       "compatible": "1.0.0",
@@ -41,6 +41,14 @@
         {
           "name": "gtr-3-prow",
           "deviceSource": 230
+        },
+        {
+          "name": "cheetah-pro",
+          "deviceSource": 8126720
+        },
+        {
+          "name": "cheetah-prow",
+          "deviceSource": 8126721
         }
       ],
       "designWidth": 480
