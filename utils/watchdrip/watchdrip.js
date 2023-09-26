@@ -121,6 +121,7 @@ export class Watchdrip {
         this.intervalTimer = this.globalNS.setInterval(() => {
             this.checkUpdates();
         }, interval);
+        this.checkUpdates(); //for zepp os3 need to start manually
     }
 
     stopDataUpdates() {
@@ -150,8 +151,9 @@ export class Watchdrip {
     }
 
     handleRareCases() {
+        //debug.log("handleRareCases");
         let fetch = false;
-        if (this.lastUpdateAttempt == null) {
+        if (this.lastUpdateAttempt == null || this.lastUpdateAttempt === undefined) {
             debug.log("initial fetch");
             fetch = true;
         } else if (this.isTimeout(this.lastUpdateAttempt, DATA_STALE_TIME_MS)) {
@@ -452,7 +454,7 @@ export class Watchdrip {
                 data = str2json(info);
                 info = null;
                 debug.log("data was read");
-                this.watchdripData.setData(data); 
+                this.watchdripData.setData(data);
                 this.watchdripData.timeDiff = 0;
             } catch (e) {
 

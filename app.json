@@ -9,10 +9,10 @@
       "name": "1.0.0"
     },
     "vender": "bigdigital",
-    "description": "timer watchface",
+    "description": "watchface",
     "icon": "images/preview.png"
   },
-  "permissions": [],
+  "permissions": ["data:os.device.info"],
   "runtime": {
     "apiVersion": {
       "compatible": "1.0.0",
@@ -49,6 +49,18 @@
         {
           "name": "cheetah-prow",
           "deviceSource": 8126721
+        },
+        {
+          "name": "balance_1",
+          "deviceSource": 8519936
+        },
+        {
+          "name": "balance_2",
+          "deviceSource": 8519937
+        },
+        {
+          "name": "balance_3",
+          "deviceSource": 8519939
         }
       ],
       "designWidth": 480

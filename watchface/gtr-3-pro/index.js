@@ -279,7 +279,7 @@ WatchFace({
             lineStyles['lineHigh'] = new PointStyle("", LINE_SIZE);
             lineStyles['treatment'] = new PointStyle(TREATMENT_POINT_SIZE, TREATMENT_POINT_SIZE);
 
-            watchdrip.createGraph(GRAPH_SETTINGS.x,GRAPH_SETTINGS.y,GRAPH_SETTINGS.w,GRAPH_SETTINGS.h, lineStyles);
+            //watchdrip.createGraph(GRAPH_SETTINGS.x,GRAPH_SETTINGS.y,GRAPH_SETTINGS.w,GRAPH_SETTINGS.h, lineStyles);// uncomment to add graph
 
             watchdrip.start();
         }
