@@ -340,7 +340,7 @@ export class Watchdrip {
         let lines = {};
         graphInfo.lines.forEach(line => {
             let name = line.name;
-            if (name && name in this.graphLineStyles) {
+            if (name !== "" && name in this.graphLineStyles) {
                 let lineStyle = this.graphLineStyles[name];
                 //if image not defined, use default line color
                 if (lineStyle.color === "" && lineStyle.imageFile === "") {
