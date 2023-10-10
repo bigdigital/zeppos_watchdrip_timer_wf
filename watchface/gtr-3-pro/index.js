@@ -2,32 +2,10 @@ import {DebugText} from "../../shared/debug";
 import {Watchdrip} from "../../utils/watchdrip/watchdrip";
 import {WatchdripData} from "../../utils/watchdrip/watchdrip-data";
 import {getGlobal} from "../../shared/global";
-import {
-    ANALOG_TIME_SECONDS,
-    BATTERY_ARC,
-    BG_DELTA_TEXT,
-    BG_STALE_IMG,
-    BG_STATUS_HIGHT_IMG,
-    BG_STATUS_LOW_IMG,
-    BG_STATUS_OK_IMG,
-    BG_TIME_TEXT,
-    BG_TREND_IMAGE,
-    BG_VALUE_NO_DATA_TEXT,
-    BG_VALUE_TEXT_IMG,
-    DAYS_TEXT_IMG, DIGITAL_TIME, DIGITAL_TIME_AOD,
-    DIGITAL_TIME_SEPARATOR,
-    DIGITAL_TIME_SEPARATOR_AOD, GRAPH_SETTINGS,
-    IMG_LOADING_PROGRESS,
-    IMG_STATUS_BT_DISCONNECTED,
-    IOB_TEXT,
-    NORMAL_DIST_TEXT_IMG,
-    NORMAL_HEART_RATE_TEXT_IMG,
-    NORMAL_STEPS_TEXT_IMG,
-    PAI_ARC,
-    PHONE_BATTERY_TEXT,
-    TREATMENT_TEXT,
-    WEEK_DAYS
+import {  GRAPH_SETTINGS,
 } from "./styles";
+
+import * as styles from "./styles";
 import {BG_FILL_RECT, BG_IMG} from "../../utils/config/styles_global";
 import {PROGRESS_ANGLE_INC, PROGRESS_UPDATE_INTERVAL_MS, TEST_DATA} from "../../utils/config/constants";
 import {PointStyle} from "../../utils/watchdrip/graph/pointStyle";
@@ -88,8 +66,8 @@ function stopLoader() {
 
 function scale_call() {
     if (screenType !== hmSetting.screen_type.AOD) {
-        batteryCircleArc.setProperty(hmUI.prop.MORE, getArcEndByVal(batterySensor.current, BATTERY_ARC.start_angle, BATTERY_ARC.end_angle))
-        paiCircleArc.setProperty(hmUI.prop.MORE, getArcEndByVal(paiSensor.totalpai, PAI_ARC.start_angle, PAI_ARC.end_angle))
+        batteryCircleArc.setProperty(hmUI.prop.MORE, getArcEndByVal(batterySensor.current, styles.BATTERY_ARC.start_angle, styles.BATTERY_ARC.end_angle))
+        paiCircleArc.setProperty(hmUI.prop.MORE, getArcEndByVal(paiSensor.totalpai, styles.PAI_ARC.start_angle, styles.PAI_ARC.end_angle))
     }
 }
 
@@ -102,37 +80,37 @@ WatchFace({
             imgBg = hmUI.createWidget(hmUI.widget.IMG, BG_IMG);
         }
 
-        let digitalTimeParam = DIGITAL_TIME;
-        let clockSeparatorParam = DIGITAL_TIME_SEPARATOR;
+        let digitalTimeParam = styles.DIGITAL_TIME;
+        let clockSeparatorParam = styles.DIGITAL_TIME_SEPARATOR;
         if (screenType === hmSetting.screen_type.AOD) {
-            digitalTimeParam = DIGITAL_TIME_AOD;
-            clockSeparatorParam = DIGITAL_TIME_SEPARATOR_AOD;
+            digitalTimeParam = styles.DIGITAL_TIME_AOD;
+            clockSeparatorParam = styles.DIGITAL_TIME_SEPARATOR_AOD;
         }
         digitalClock = hmUI.createWidget(hmUI.widget.IMG_TIME, digitalTimeParam);
 
         digitalClockSeparator = hmUI.createWidget(hmUI.widget.IMG, clockSeparatorParam);
 
-        normalHeartRateTextImg = hmUI.createWidget(hmUI.widget.TEXT_IMG, NORMAL_HEART_RATE_TEXT_IMG);
+        normalHeartRateTextImg = hmUI.createWidget(hmUI.widget.TEXT_IMG, styles.NORMAL_HEART_RATE_TEXT_IMG);
 
-        normalStepsTextImg = hmUI.createWidget(hmUI.widget.TEXT_IMG, NORMAL_STEPS_TEXT_IMG);
+        normalStepsTextImg = hmUI.createWidget(hmUI.widget.TEXT_IMG, styles.NORMAL_STEPS_TEXT_IMG);
 
-        normalDistTextImg = hmUI.createWidget(hmUI.widget.TEXT_IMG, NORMAL_DIST_TEXT_IMG);
+        normalDistTextImg = hmUI.createWidget(hmUI.widget.TEXT_IMG, styles.NORMAL_DIST_TEXT_IMG);
 
-        weekImg = hmUI.createWidget(hmUI.widget.IMG_WEEK, WEEK_DAYS);
+        weekImg = hmUI.createWidget(hmUI.widget.IMG_WEEK, styles.WEEK_DAYS);
 
-        dateDayImg = hmUI.createWidget(hmUI.widget.IMG_DATE, DAYS_TEXT_IMG);
+        dateDayImg = hmUI.createWidget(hmUI.widget.IMG_DATE, styles.DAYS_TEXT_IMG);
 
-        btDisconnected = hmUI.createWidget(hmUI.widget.IMG_STATUS, IMG_STATUS_BT_DISCONNECTED);
+        btDisconnected = hmUI.createWidget(hmUI.widget.IMG_STATUS, styles.IMG_STATUS_BT_DISCONNECTED);
         batterySensor = hmSensor.createSensor(hmSensor.id.BATTERY);
         paiSensor = hmSensor.createSensor(hmSensor.id.PAI);
         if (screenType !== hmSetting.screen_type.AOD) {
-            batteryCircleArc = hmUI.createWidget(hmUI.widget.ARC, BATTERY_ARC);
-            paiCircleArc = hmUI.createWidget(hmUI.widget.ARC, PAI_ARC);
+            batteryCircleArc = hmUI.createWidget(hmUI.widget.ARC, styles.BATTERY_ARC);
+            paiCircleArc = hmUI.createWidget(hmUI.widget.ARC, styles.PAI_ARC);
 
             batterySensor.addEventListener(hmSensor.event.CHANGE, scale_call);
             paiSensor.addEventListener(hmSensor.event.CHANGE, scale_call);
 
-            secondsPointer = hmUI.createWidget(hmUI.widget.TIME_POINTER, ANALOG_TIME_SECONDS);
+            secondsPointer = hmUI.createWidget(hmUI.widget.TIME_POINTER, styles.ANALOG_TIME_SECONDS);
         }
 
         if (screenType !== hmSetting.screen_type.AOD) {
@@ -146,20 +124,20 @@ WatchFace({
         }
 
         //init watchdrip related widgets
-        bgValTextWidget = hmUI.createWidget(hmUI.widget.TEXT, BG_VALUE_NO_DATA_TEXT);
-        bgValTextImgWidget = hmUI.createWidget(hmUI.widget.TEXT_IMG, BG_VALUE_TEXT_IMG);
-        bgValTimeTextWidget = hmUI.createWidget(hmUI.widget.TEXT, BG_TIME_TEXT);
-        bgDeltaTextWidget = hmUI.createWidget(hmUI.widget.TEXT, BG_DELTA_TEXT);
-        bgTrendImageWidget = hmUI.createWidget(hmUI.widget.IMG, BG_TREND_IMAGE);
+        bgValTextWidget = hmUI.createWidget(hmUI.widget.TEXT, styles.BG_VALUE_NO_DATA_TEXT);
+        bgValTextImgWidget = hmUI.createWidget(hmUI.widget.TEXT_IMG, styles.BG_VALUE_TEXT_IMG);
+        bgValTimeTextWidget = hmUI.createWidget(hmUI.widget.TEXT, styles.BG_TIME_TEXT);
+        bgDeltaTextWidget = hmUI.createWidget(hmUI.widget.TEXT, styles.BG_DELTA_TEXT);
+        bgTrendImageWidget = hmUI.createWidget(hmUI.widget.IMG, styles.BG_TREND_IMAGE);
         //bgStaleLine = hmUI.createWidget(hmUI.widget.FILL_RECT, BG_STALE_RECT);
-        bgStaleLine = hmUI.createWidget(hmUI.widget.IMG, BG_STALE_IMG);
-        phoneBattery = hmUI.createWidget(hmUI.widget.TEXT, PHONE_BATTERY_TEXT);
-        iob = hmUI.createWidget(hmUI.widget.TEXT, IOB_TEXT);
-        treatment = hmUI.createWidget(hmUI.widget.TEXT, TREATMENT_TEXT);
-        bgStatusLow = hmUI.createWidget(hmUI.widget.IMG, BG_STATUS_LOW_IMG);
-        bgStatusOk = hmUI.createWidget(hmUI.widget.IMG, BG_STATUS_OK_IMG);
-        bgStatusHight = hmUI.createWidget(hmUI.widget.IMG, BG_STATUS_HIGHT_IMG);
-        progress = hmUI.createWidget(hmUI.widget.IMG, IMG_LOADING_PROGRESS);
+        bgStaleLine = hmUI.createWidget(hmUI.widget.IMG, styles.BG_STALE_IMG);
+        phoneBattery = hmUI.createWidget(hmUI.widget.TEXT, styles.PHONE_BATTERY_TEXT);
+        iob = hmUI.createWidget(hmUI.widget.TEXT, styles.IOB_TEXT);
+        treatment = hmUI.createWidget(hmUI.widget.TEXT, styles.TREATMENT_TEXT);
+        bgStatusLow = hmUI.createWidget(hmUI.widget.IMG, styles.BG_STATUS_LOW_IMG);
+        bgStatusOk = hmUI.createWidget(hmUI.widget.IMG, styles.BG_STATUS_OK_IMG);
+        bgStatusHight = hmUI.createWidget(hmUI.widget.IMG, styles.BG_STATUS_HIGHT_IMG);
+        progress = hmUI.createWidget(hmUI.widget.IMG, styles.IMG_LOADING_PROGRESS);
         stopLoader();
 
         scale_call();
@@ -279,7 +257,7 @@ WatchFace({
             lineStyles['lineHigh'] = new PointStyle("", LINE_SIZE);
             lineStyles['treatment'] = new PointStyle(TREATMENT_POINT_SIZE, TREATMENT_POINT_SIZE);
 
-            watchdrip.createGraph(GRAPH_SETTINGS.x,GRAPH_SETTINGS.y,GRAPH_SETTINGS.w,GRAPH_SETTINGS.h, lineStyles);// uncomment to add graph
+          //  watchdrip.createGraph(GRAPH_SETTINGS.x,GRAPH_SETTINGS.y,GRAPH_SETTINGS.w,GRAPH_SETTINGS.h, lineStyles);// uncomment to add graph
 
             watchdrip.start();
         }

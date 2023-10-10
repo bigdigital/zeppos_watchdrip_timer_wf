@@ -1,16 +1,9 @@
 import {getGlobal} from "../../shared/global";
 import {
-    WATCHDRIP_ALARM_CONFIG_DEFAULTS,
+    WATCHDRIP_ALARM_SETTINGS_DEFAULTS,
     WATCHDRIP_APP_ID,
-    WATCHDRIP_CONFIG,
-    WATCHDRIP_CONFIG_DEFAULTS,
-    WATCHDRIP_CONFIG_LAST_UPDATE,
-    WF_INFO,
-    WF_INFO_DIR,
+    WF_DIR,
     WF_INFO_FILE,
-    WF_INFO_LAST_UPDATE,
-    WF_INFO_LAST_UPDATE_ATTEMPT,
-    WF_INFO_LAST_UPDATE_SUCCESS
 } from "../config/global-constants";
 import {json2str, str2json} from "../../shared/data";
 import {MessageBuilder} from "../../shared/message";
@@ -25,14 +18,14 @@ import {
     DATA_UPDATE_INTERVAL_MS,
     GRAPH_LIMIT,
     MMOLL_TO_MGDL,
-    USE_FILE_INFO_STORAGE,
     XDRIP_UPDATE_INTERVAL_MS
 } from "../config/constants";
-import * as fs from "./../../shared/fs";
 import {WatchdripData} from "./watchdrip-data";
 import {gotoSubpage} from "../../shared/navigate";
 import {Graph} from "./graph/graph";
 import {Viewport} from "./graph/viewport";
+import {WatchdripConfig} from "./config";
+import {Path} from "../path";
 
 let {messageBuilder} = getApp()._options.globalData;
 
@@ -47,6 +40,8 @@ var watchdrip = null;
 
 export class Watchdrip {
     constructor() {
+        this.createWatchdripDir();
+
         this.screenType = hmSetting.getScreenType();
 
         this.globalNS = getGlobal();
@@ -60,12 +55,20 @@ export class Watchdrip {
         this.configLastUpdate = 0;
         this.updatingData = false;
         this.intervalTimer = null;
-        this.firstRun = true;
         this.resumeCall = false;
         /*
         typeof Graph
         */
         this.graph = new Graph(0, 0, 0, 0);
+        this.conf = new WatchdripConfig();
+        this.infoFile = new Path("full", WF_INFO_FILE);
+    }
+
+    createWatchdripDir() {
+        let dir = new Path("full", WF_DIR);
+        if (!dir.exists()) {
+            dir.mkdir();
+        }
     }
 
     //call before any usage of the class instance
@@ -75,7 +78,6 @@ export class Watchdrip {
 
     start() {
         this.checkConfigUpdate();
-        this.createWatchdripDir();
         this.updateIntervals = this.getUpdateInterval();
         this.readInfo();
         this.updateWidgets();
@@ -144,10 +146,12 @@ export class Watchdrip {
     }
 
     readLastUpdate() {
-        let lastInfoUpdate = hmFS.SysProGetInt64(WF_INFO_LAST_UPDATE);
-        this.lastUpdateAttempt = hmFS.SysProGetInt64(WF_INFO_LAST_UPDATE_ATTEMPT);
-        this.lastUpdateSucessful = hmFS.SysProGetBool(WF_INFO_LAST_UPDATE_SUCCESS);
-        return lastInfoUpdate;
+        debug.log("readLastUpdate");
+        this.conf.read();
+        this.lastUpdateAttempt = this.conf.infoLastUpdAttempt;
+        this.lastUpdateSucessful = this.conf.infoLastUpdSucess;
+
+        return this.conf.infoLastUpd;
     }
 
     handleRareCases() {
@@ -172,7 +176,7 @@ export class Watchdrip {
         }
         this.updateTimesWidget();
 
-        if (this.watchdripConfig.disableUpdates) {
+        if (this.conf.settings.disableUpdates) {
             debug.log("disableUpdates, return");
             return;
         }
@@ -244,11 +248,7 @@ export class Watchdrip {
         //for some reason the wf can call resume two times
         if (!this.resumeCall) {
             this.resumeCall = true;
-            //prevent two reading(useful for AOD)
-            if (this.firstRun) {
-                this.firstRun = false;
-                this.readInfo();
-            }
+            this.readInfo();
             this.updatingData = false;
             this.startDataUpdates();
         } else {
@@ -264,6 +264,7 @@ export class Watchdrip {
         this.updatingData = false;
         this.updateFinish();
         this.dropConnection();
+        this.conf.save();
     }
 
     setUpdateValueWidgetCallback(callback) {
@@ -359,14 +360,15 @@ export class Watchdrip {
     }
 
     isAppFetch() {
-        return this.watchdripConfig.useAppFetch === true;
+        return this.conf.settings.useAppFetch === true;
     }
 
     resetLastUpdate() {
+        debug.log("resetLastUpdate");
         this.lastUpdateAttempt = this.timeSensor.utc;
-        hmFS.SysProSetInt64(WF_INFO_LAST_UPDATE_ATTEMPT, this.lastUpdateAttempt);
         this.lastUpdateSucessful = false;
-        hmFS.SysProSetBool(WF_INFO_LAST_UPDATE_SUCCESS, this.lastUpdateSucessful);
+        this.conf.infoLastUpdAttempt = this.lastUpdateAttempt
+        this.conf.infoLastUpdSucess = this.lastUpdateSucessful;
     }
 
     fetchInfo() {
@@ -374,7 +376,7 @@ export class Watchdrip {
         this.resetLastUpdate();
         if (this.isAppFetch()) {
             gotoSubpage('update', {
-                    params: WATCHDRIP_ALARM_CONFIG_DEFAULTS
+                    params: WATCHDRIP_ALARM_SETTINGS_DEFAULTS
                 },
                 WATCHDRIP_APP_ID);
             return;
@@ -388,7 +390,7 @@ export class Watchdrip {
         }
         this.updatingData = true;
         this.updateStart();
-        var params = WATCHDRIP_ALARM_CONFIG_DEFAULTS.fetchParams;
+        let params = WATCHDRIP_ALARM_SETTINGS_DEFAULTS.fetchParams;
         messageBuilder
             .request({
                 method: Commands.getInfo,
@@ -431,34 +433,13 @@ export class Watchdrip {
             });
     }
 
-    createWatchdripDir() {
-        if (USE_FILE_INFO_STORAGE && !this.isAOD()) {
-            if (!fs.statSync(WF_INFO_DIR)) {
-                fs.mkdirSync(WF_INFO_DIR);
-            }
-            // const [fileNameArr] = hmFS.readdir("/storage");
-            // debug.log(fileNameArr);
-        }
-    }
 
     readInfo() {
-        let info = "";
-        if (USE_FILE_INFO_STORAGE) {
-            info = fs.readTextFile(WF_INFO_FILE);
-        } else {
-            info = hmFS.SysProGetChars(WF_INFO);
-        }
-        if (info) {
-            let data = {};
-            try {
-                data = str2json(info);
-                info = null;
-                debug.log("data was read");
-                this.watchdripData.setData(data);
-                this.watchdripData.timeDiff = 0;
-            } catch (e) {
-
-            }
+        let data = this.infoFile.fetchJSON();
+        if (data) {
+            debug.log("data was read");
+            this.watchdripData.setData(data);
+            this.watchdripData.timeDiff = 0;
             data = null;
             return true
         }
@@ -466,46 +447,24 @@ export class Watchdrip {
     }
 
     saveInfo(info) {
-        if (USE_FILE_INFO_STORAGE) {
-            fs.writeTextFile(WF_INFO_FILE, info);
-        } else {
-            hmFS.SysProSetChars(WF_INFO, info);
-        }
+        debug.log("saveInfo");
+        this.infoFile.overrideWithText(info);
         this.lastUpdateSucessful = true;
         let time = this.timeSensor.utc;
-        hmFS.SysProSetInt64(WF_INFO_LAST_UPDATE, time);
-        hmFS.SysProSetBool(WF_INFO_LAST_UPDATE_SUCCESS, this.lastUpdateSucessful);
+        this.conf.infoLastUpd = time
+        this.conf.infoLastUpdSucess = this.lastUpdateSucessful;
         return time;
-    }
-
-    /*Read config which is defined in the app. If not defined, init config*/
-    readConfig() {
-        let configStr = hmFS.SysProGetChars(WATCHDRIP_CONFIG);
-        if (!configStr) {
-            this.watchdripConfig = WATCHDRIP_CONFIG_DEFAULTS;
-            this.saveConfig();
-        } else {
-            try {
-                this.watchdripConfig = str2json(configStr);
-            } catch (e) {
-
-            }
-        }
-    }
-
-    saveConfig() {
-        hmFS.SysProSetChars(WATCHDRIP_CONFIG, json2str(this.watchdripConfig));
-        hmFS.SysProSetInt64(WATCHDRIP_CONFIG_LAST_UPDATE, this.timeSensor.utc);
     }
 
     /* will check last config updates to sync config with app*/
     checkConfigUpdate() {
-        let configLastUpdate = hmFS.SysProGetInt64(WATCHDRIP_CONFIG_LAST_UPDATE);
+        this.conf.read();
+
+        let configLastUpdate = this.conf.settingsTime;
         if (this.configLastUpdate !== configLastUpdate) {
             debug.log("detected config change");
             this.configLastUpdate = configLastUpdate;
-            this.readConfig();
-            debug.setEnabled(this.watchdripConfig.showLog);
+            debug.setEnabled(this.conf.settings.showLog);
             //restart timer (the fetch mode can be changed)
             this.stopDataUpdates();
             this.startDataUpdates();
@@ -515,6 +474,7 @@ export class Watchdrip {
     }
 
     destroy() {
+        this.conf.save();
         this.stopDataUpdates();
         this.dropConnection();
     }

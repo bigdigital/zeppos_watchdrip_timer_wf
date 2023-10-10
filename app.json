@@ -6,13 +6,13 @@
     "appType": "watchface",
     "version": {
       "code": 1,
-      "name": "1.0.0"
+      "name": "2.0.0"
     },
     "vender": "bigdigital",
     "description": "watchface",
     "icon": "images/preview.png"
   },
-  "permissions": ["data:os.device.info"],
+  "permissions": ["data:os.device.info","device:os.ble"],
   "runtime": {
     "apiVersion": {
       "compatible": "1.0.0",
