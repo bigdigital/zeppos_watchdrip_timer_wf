@@ -145,14 +145,6 @@ export class Watchdrip {
         return this.timeSensor.utc - time > timeout_ms;
     }
 
-    readLastUpdate() {
-        debug.log("readLastUpdate");
-        this.conf.read();
-        this.lastUpdateAttempt = this.conf.infoLastUpdAttempt;
-        this.lastUpdateSucessful = this.conf.infoLastUpdSucess;
-
-        return this.conf.infoLastUpd;
-    }
 
     handleRareCases() {
         //debug.log("handleRareCases");
@@ -171,7 +163,8 @@ export class Watchdrip {
 
     checkUpdates() {
         //debug.log("checkUpdates");
-        if (this.checkConfigUpdate()) {
+
+        if (this.checkConfigUpdate()) { //read config
             return; //restart
         }
         this.updateTimesWidget();
@@ -184,12 +177,17 @@ export class Watchdrip {
             debug.log("updatingData, return");
             return;
         }
-        let lastInfoUpdate = this.readLastUpdate();
+
+        this.lastUpdateAttempt = this.conf.infoLastUpdAttempt;
+        this.lastUpdateSucessful = this.conf.infoLastUpdSucess;
+
+        const lastInfoUpdate =  this.conf.infoLastUpd;
+
         if (!lastInfoUpdate) {
             this.handleRareCases();
         } else {
             if (this.lastUpdateSucessful) {
-                if (this.lastInfoUpdate !== lastInfoUpdate) {
+                if (this.lastInfoUpdate !== 0 && this.lastInfoUpdate !== lastInfoUpdate) {
                     //update widgets because the data was modified outside the current scope
                     debug.log("update from remote");
                     this.readInfo();
@@ -249,6 +247,7 @@ export class Watchdrip {
         if (!this.resumeCall) {
             this.resumeCall = true;
             this.readInfo();
+            this.updateWidgets();
             this.updatingData = false;
             this.startDataUpdates();
         } else {
