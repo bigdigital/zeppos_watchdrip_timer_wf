@@ -1,9 +1,8 @@
 import {getGlobal} from "../../shared/global";
 import {
-    WATCHDRIP_ALARM_SETTINGS_DEFAULTS,
-    WATCHDRIP_APP_ID,
+    WATCHDRIP_APP_ID, WATCHDRIP_SETTINGS_DEFAULTS, WF_CONFIG_FILE,
     WF_DIR,
-    WF_INFO_FILE,
+    WF_INFO_FILE, WF_STATUS_FILE,
 } from "../config/global-constants";
 import {json2str, str2json} from "../../shared/data";
 import {MessageBuilder} from "../../shared/message";
@@ -24,10 +23,9 @@ import {WatchdripData} from "./watchdrip-data";
 import {gotoSubpage} from "../../shared/navigate";
 import {Graph} from "./graph/graph";
 import {Viewport} from "./graph/viewport";
-import {WatchdripConfig} from "./config";
 import {Path} from "../path";
-
-let {messageBuilder} = getApp()._options.globalData;
+import {InfoStorage} from "./infoStorage";
+import {simpleObjectHash} from "../helper";
 
 /*
 typeof DebugText
@@ -52,7 +50,7 @@ export class Watchdrip {
         this.lastInfoUpdate = 0;
         this.lastUpdateAttempt = null;
         this.lastUpdateSucessful = false;
-        this.configLastUpdate = 0;
+        this.configLastUpdateHash = 0;
         this.updatingData = false;
         this.intervalTimer = null;
         this.resumeCall = false;
@@ -60,8 +58,15 @@ export class Watchdrip {
         typeof Graph
         */
         this.graph = new Graph(0, 0, 0, 0);
-        this.conf = new WatchdripConfig();
         this.infoFile = new Path("full", WF_INFO_FILE);
+        this.configStorage = new InfoStorage(
+            new Path("full", WF_CONFIG_FILE),
+            WATCHDRIP_SETTINGS_DEFAULTS
+        );
+        this.statusStorage = new InfoStorage(
+            new Path("full", WF_STATUS_FILE),
+            WATCHDRIP_INFO_DEFAULTS
+        );
     }
 
     createWatchdripDir() {
@@ -100,17 +105,13 @@ export class Watchdrip {
         let interval = DATA_UPDATE_INTERVAL_MS;
         if (this.isAOD()) {
             interval = DATA_AOD_UPDATE_INTERVAL_MS;
-        } else if (this.isAppFetch()) {
-            interval = APP_FETCH_UPDATE_INTERVAL_MS
         }
         return interval;
     }
 
     getTimerUpdateInterval() {
         let interval = DATA_TIMER_UPDATE_INTERVAL_MS;
-        if (this.isAppFetch()) {
-            interval = APP_FETCH_TIMER_UPDATE_INTERVAL_MS
-        } else if (this.isAOD()) {
+        if (this.isAOD()) {
             interval = DATA_AOD_TIMER_UPDATE_INTERVAL_MS;
         }
         return interval;
@@ -169,7 +170,7 @@ export class Watchdrip {
         }
         this.updateTimesWidget();
 
-        if (this.conf.settings.disableUpdates) {
+        if (this.configStorage.data.disableUpdates) {
             debug.log("disableUpdates, return");
             return;
         }
@@ -178,10 +179,10 @@ export class Watchdrip {
             return;
         }
 
-        this.lastUpdateAttempt = this.conf.infoLastUpdAttempt;
-        this.lastUpdateSucessful = this.conf.infoLastUpdSucess;
+        this.lastUpdateAttempt = this.statusStorage.data.lastUpdAttempt;
+        this.lastUpdateSucessful =  this.statusStorage.data.lastUpdSuccess;
 
-        const lastInfoUpdate =  this.conf.infoLastUpd;
+        const lastInfoUpdate =   this.statusStorage.data.lastUpd;
 
         if (!lastInfoUpdate) {
             this.handleRareCases();
@@ -218,27 +219,7 @@ export class Watchdrip {
         }
     }
 
-    //connect watch with side app
-    initConnection() {
-        if (this.connectionActive) {
-            return;
-        }
-        debug.log("initConnection");
-        this.connectionActive = true;
-        const appId = WATCHDRIP_APP_ID;
-        //we need to recreate connection to force start side app
-        messageBuilder = new MessageBuilder({appId});
-        messageBuilder.connect();
-    }
 
-    dropConnection() {
-        if (!this.connectionActive) {
-            return;
-        }
-        debug.log("dropConnection");
-        messageBuilder.disConnect();
-        this.connectionActive = false;
-    }
 
     /*Callback which is called  when watchface is active  (visible)*/
     widgetDelegateCallbackResumeCall() {
@@ -262,8 +243,6 @@ export class Watchdrip {
         this.resumeCall = false;
         this.updatingData = false;
         this.updateFinish();
-        this.dropConnection();
-        this.conf.save();
     }
 
     setUpdateValueWidgetCallback(callback) {
@@ -358,15 +337,11 @@ export class Watchdrip {
         this.graph.draw();
     }
 
-    isAppFetch() {
-        return this.conf.settings.useAppFetch === true;
-    }
-
     resetLastUpdate() {
         debug.log("resetLastUpdate");
         this.lastUpdateAttempt = this.timeSensor.utc;
         this.lastUpdateSucessful = false;
-        this.conf.infoLastUpdAttempt = this.lastUpdateAttempt
+        this.conf.lastUpdAttempt = this.lastUpdateAttempt
         this.conf.infoLastUpdSucess = this.lastUpdateSucessful;
     }
 
@@ -457,13 +432,13 @@ export class Watchdrip {
 
     /* will check last config updates to sync config with app*/
     checkConfigUpdate() {
-        this.conf.read();
+        this.configStorage.read();
 
-        let configLastUpdate = this.conf.settingsTime;
-        if (this.configLastUpdate !== configLastUpdate) {
+        let configLastUpdateHash = simpleObjectHash(this.configStorage.data);
+        if (this.configLastUpdateHash !== configLastUpdateHash) {
             debug.log("detected config change");
-            this.configLastUpdate = configLastUpdate;
-            debug.setEnabled(this.conf.settings.showLog);
+            this.configLastUpdateHash = configLastUpdateHash;
+            debug.setEnabled(this.configStorage.data.showLog);
             //restart timer (the fetch mode can be changed)
             this.stopDataUpdates();
             this.startDataUpdates();
