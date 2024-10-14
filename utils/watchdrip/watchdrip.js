@@ -1,6 +1,6 @@
 import {getGlobal} from "../../shared/global";
 import {
-    WATCHDRIP_APP_ID, WATCHDRIP_SETTINGS_DEFAULTS, WF_CONFIG_FILE,
+    WATCHDRIP_APP_ID, WF_CONFIG_FILE,
     WF_DIR,
     WF_INFO_FILE, WF_STATUS_FILE,
 } from "../config/global-constants";
@@ -60,12 +60,10 @@ export class Watchdrip {
         this.graph = new Graph(0, 0, 0, 0);
         this.infoFile = new Path("full", WF_INFO_FILE);
         this.configStorage = new InfoStorage(
-            new Path("full", WF_CONFIG_FILE),
-            WATCHDRIP_SETTINGS_DEFAULTS
+            new Path("data", WF_CONFIG_FILE)
         );
         this.statusStorage = new InfoStorage(
-            new Path("full", WF_STATUS_FILE),
-            WATCHDRIP_INFO_DEFAULTS
+            new Path("full", WF_STATUS_FILE)
         );
     }
 
