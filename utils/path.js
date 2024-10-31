@@ -2,11 +2,10 @@ const deviceID = hmSetting.getDeviceInfo().deviceName;
 export const isMiBand7 = deviceID === "Xiaomi Smart Band 7";
 
 export class Path {
-    constructor(scope, path) {
-        if(path[0] != "/") path = "/" + path;
-
+    constructor(scope, path, appid = 0) {
         this.scope = scope;
         this.path = path;
+        this.appid = appid;
 
         if (scope === "assets") {
             this.relativePath = path;
@@ -16,7 +15,7 @@ export class Path {
             this.absolutePath = FsTools.fullDataPath(path);
         } else if (scope === "full") {
             this.relativePath = `../../../${path.substring(9)}`;
-            if(this.relativePath.endsWith("/"))
+            if (this.relativePath.endsWith("/"))
                 this.relativePath = this.relativePath.substring(0, this.relativePath.length - 1);
             this.absolutePath = path;
         } else {
@@ -34,7 +33,7 @@ export class Path {
     }
 
     src() {
-        if(this.scope !== "assets")
+        if (this.scope !== "assets")
             throw new Error("Can't get src for non-asset");
         return this.relativePath.substring(1);
     }
@@ -49,13 +48,13 @@ export class Path {
 
     size() {
         const [st, e] = this.stat();
-        if(st.size) {
+        if (st.size) {
             // Is file, nothing to do anymore
             return st.size;
         }
 
         let output = 0;
-        for(const file of this.list()[0]) {
+        for (const file of this.list()[0]) {
             output += this.get(file).size();
         }
 
@@ -63,8 +62,13 @@ export class Path {
     }
 
     open(flags) {
+        console.log("open " + this.relativePath + " appid " + this.appid);
         if (this.scope === "data") {
-            this._f = hmFS.open(this.relativePath, flags);
+            if (this.appid) {
+                this._f = hmFS.open(this.relativePath, flags, {appid: this.appid});
+            } else {
+                this._f = hmFS.open(this.relativePath, flags);
+            }
         } else {
             this._f = hmFS.open_asset(this.relativePath, flags);
         }
@@ -73,7 +77,7 @@ export class Path {
     }
 
     remove() {
-        if(this.scope === "assets")
+        if (this.scope === "assets")
             return this.resolve().remove();
 
         try {
@@ -87,37 +91,63 @@ export class Path {
     removeTree() {
         // Recursive !!!
         const [files, e] = this.list();
-        for(let i in files) {
+        for (let i in files) {
             this.get(files[i]).removeTree();
         }
 
         this.remove();
     }
 
-    fetch(limit = Infinity) {
-        const [st, e] = this.stat();
-        if (e != 0) return null;
-
-        const length = Math.min(limit, st.size);
-        const buffer = new ArrayBuffer(st.size);
+    fetch() {
+        let chunkSize = 256;
+        let chunkedRead = true;
+        if (!this.scope === "data" && !this.appid) {
+            const [st, e] = this.stat();
+            if (e !== 0) return null;
+            chunkSize = st.size;
+        }
+        let bytesRead = 0
+        const chunks = [];
         this.open(hmFS.O_RDONLY);
-        this.read(buffer, 0, length);
-        this.close();
+        while (true) {
+            const buffer = new ArrayBuffer(chunkSize);
+            const count = this.read(buffer, 0, chunkSize);
 
-        return buffer;
+            if (count === 0) {
+                break;
+            }
+
+            chunks.push(new Uint8Array(buffer, 0, count));
+            bytesRead += count;
+        }
+
+        this.close();
+        // Concatenate all chunks
+        const allData = new Uint8Array(bytesRead);
+        let offset = 0;
+        for (const chunk of chunks) {
+            allData.set(chunk, offset);
+            offset += chunk.length;
+        }
+        return allData;
     }
 
-    fetchText(limit = Infinity) {
-        const buf = this.fetch(limit);
+    fetchText() {
+        const buf = this.fetch();
         if (!buf) return buf;
-        const view = new Uint8Array(buf);
-        return FsTools.decodeUtf8(view, limit)[0];
+        const  str = FsTools.ab2str(buf);
+        console.log("len: " + str.length);
+        return str;
     }
 
     fetchJSON() {
         const text = this.fetchText();
         if (!text) return text;
-        return JSON.parse(text);
+        try {
+            return JSON.parse(text);
+        } catch {
+            return null;
+        }
     }
 
     override(buffer) {
@@ -143,16 +173,16 @@ export class Path {
 
     copyTree(destEntry, move = false) {
         // Recursive !!!
-        if(this.isFile()) {
+        if (this.isFile()) {
             this.copy(destEntry);
         } else {
             dest.mkdir();
-            for(const file of this.list()[0]) {
+            for (const file of this.list()[0]) {
                 this.get(file).copyTree(destEntry.get(file));
             }
         }
 
-        if(move) this.removeTree();
+        if (move) this.removeTree();
     }
 
     isFile() {
@@ -161,7 +191,7 @@ export class Path {
     }
 
     isFolder() {
-        if(this.absolutePath == "/storage") return true;
+        if (this.absolutePath == "/storage") return true;
         const [st, e] = this.stat();
         return e == 0 && (st.mode & 32768) == 0;
     }
@@ -186,7 +216,7 @@ export class Path {
 
     read(buffer, offset, length) {
         console.log("read");
-        hmFS.read(this._f, buffer, offset, length)
+        return hmFS.read(this._f, buffer, offset, length);
     }
 
     write(buffer, offset, length) {
@@ -247,57 +277,12 @@ export class FsTools {
         return new Uint8Array(utf8).buffer;
     }
 
-    // source: https://stackoverflow.com/questions/13356493/decode-utf-8-with-javascript
-    static decodeUtf8(array, outLimit = Infinity, startPosition = 0) {
-        let out = "";
-        let length = array.length;
-
-        let i = startPosition,
-            c, char2, char3;
-        while (i < length && out.length < outLimit) {
-            c = array[i++];
-            switch (c >> 4) {
-                case 0:
-                case 1:
-                case 2:
-                case 3:
-                case 4:
-                case 5:
-                case 6:
-                case 7:
-                    // 0xxxxxxx
-                    out += String.fromCharCode(c);
-                    break;
-                case 12:
-                case 13:
-                    // 110x xxxx   10xx xxxx
-                    char2 = array[i++];
-                    out += String.fromCharCode(
-                        ((c & 0x1f) << 6) | (char2 & 0x3f)
-                    );
-                    break;
-                case 14:
-                    // 1110 xxxx  10xx xxxx  10xx xxxx
-                    char2 = array[i++];
-                    char3 = array[i++];
-                    out += String.fromCharCode(
-                        ((c & 0x0f) << 12) |
-                        ((char2 & 0x3f) << 6) |
-                        ((char3 & 0x3f) << 0)
-                    );
-                    break;
-            }
-        }
-
-        return [out, i - startPosition];
-    }
-
-    static Utf8ArrayToStr(array) {
-        return FsTools.decodeUtf8(array)[0];
+    static ab2str(buf) {
+        return String.fromCharCode.apply(null, new Uint8Array(buf));
     }
 
     static printBytes(val) {
-        if(this.fsUnitCfg === undefined)
+        if (this.fsUnitCfg === undefined)
             this.fsUnitCfg = hmFS.SysProGetBool("mmk_tb_fs_unit");
 
         const options = this.fsUnitCfg ? ["B", "KiB", "MiB"] : ["B", "KB", "MB"];

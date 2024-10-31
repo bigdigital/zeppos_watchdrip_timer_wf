@@ -40,13 +40,15 @@ export class InfoStorage {
         } else {
             info = this.readLocalStorageItem();
         }
-        if (!info){ return false;}
+        if (!info) {
+            return false;
+        }
         this.unparse(info)
         return true;
     }
 
-    get(key, fallback=null) {
-        if(this.data[key] !== undefined)
+    get(key, fallback = null) {
+        if (this.data[key] !== undefined)
             return this.data[key];
         return fallback;
     }
@@ -75,13 +77,16 @@ export class InfoStorage {
     unparse(info) {
         if (!info) return;
         console.log("unparse " + info)
-        let parsed = str2json(info);
+        try {
+            let parsed = str2json(info);
 
-        if (parsed) {
-            Object.assign(this.data, parsed);
+            if (parsed) {
+                Object.assign(this.data, parsed);
+            }
+        } catch (e) {
+            console.log("cannot parse " + e.message);
         }
     }
-d
     save() {
         console.log('save');
         let info = json2str(this.data);
