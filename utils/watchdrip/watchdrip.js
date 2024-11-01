@@ -41,7 +41,6 @@ export class Watchdrip {
         this.lastInfoUpdate = 0;
         this.lastUpdateAttempt = null;
         this.intervalTimer = null;
-        this.resumeCall = false;
         /*
         typeof Graph
         */
@@ -59,9 +58,6 @@ export class Watchdrip {
 
     start() {
         this.updateIntervals = this.getUpdateInterval();
-        this.readInfo();
-        this.updateWidgets();
-        //Monitor watchface activity in order to recreate connection
         if (this.isAOD()) {
             this.widgetDelegateCallbackResumeCall();
         } else {
@@ -144,7 +140,6 @@ export class Watchdrip {
         this.statusStorage.read();
 
         const lastUpd = this.statusStorage.data.lastUpd;
-        debug.log("lastUpd " + lastUpd);
         if (!lastUpd) {
             this.handleRareCases();
         } else {
@@ -164,33 +159,23 @@ export class Watchdrip {
                     return;
                 }
                 //data not modified from outside scope so nothing to do
-                debug.log("data not modified");
+                //debug.log("data not modified");
             } else {
                 this.handleRareCases();
             }
         }
     }
 
-
     /*Callback which is called  when watchface is active  (visible)*/
     widgetDelegateCallbackResumeCall() {
         debug.log("resume_call");
-        //for some reason the wf can call resume two times
-        if (!this.resumeCall) {
-            this.resumeCall = true;
-            this.readInfo();
-            this.updateWidgets();
-            this.startDataUpdates();
-        } else {
-            debug.log("prevent second resume");
-        }
+        this.startDataUpdates();
     }
 
     /*Callback which is called  when watchface deactivating (not visible)*/
     widgetDelegateCallbackPauseCall() {
         //debug.log("pause_call");
         this.stopDataUpdates();
-        this.resumeCall = false;
         this.updateFinish();
     }
 

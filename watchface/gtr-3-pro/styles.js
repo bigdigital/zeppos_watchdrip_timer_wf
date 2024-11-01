@@ -307,10 +307,10 @@ export const IMG_LOADING_PROGRESS = {
 
 
 export const GRAPH_SETTINGS = {
-    x: px(110),
+    x: px(150),
     y: px(280),
     w: px(250),
-    h: px(150),
+    h: px(120),
     point_size: 8,
     treatment_point_size: 12,
     line_size: 3

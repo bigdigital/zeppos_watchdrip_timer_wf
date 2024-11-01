@@ -62,7 +62,7 @@ export class Path {
     }
 
     open(flags) {
-        console.log("open " + this.relativePath + " appid " + this.appid);
+        //console.log("open " + this.relativePath + " appid " + this.appid);
         if (this.scope === "data") {
             if (this.appid) {
                 this._f = hmFS.open(this.relativePath, flags, {appid: this.appid});
@@ -99,6 +99,7 @@ export class Path {
     }
 
     fetch() {
+        console.log('fetch file:' + this.relativePath);
         let chunkSize = 256;
         let chunkedRead = true;
         if (!this.scope === "data" && !this.appid) {
@@ -119,9 +120,16 @@ export class Path {
 
             chunks.push(new Uint8Array(buffer, 0, count));
             bytesRead += count;
+
+            if (count < chunkSize) {
+                break;
+            }
         }
 
         this.close();
+        if (bytesRead === 0) {
+            return null;
+        }
         // Concatenate all chunks
         const allData = new Uint8Array(bytesRead);
         let offset = 0;
@@ -135,8 +143,7 @@ export class Path {
     fetchText() {
         const buf = this.fetch();
         if (!buf) return buf;
-        const  str = FsTools.ab2str(buf);
-        console.log("len: " + str.length);
+        const str = FsTools.ab2str(buf);
         return str;
     }
 
@@ -215,12 +222,12 @@ export class Path {
     }
 
     read(buffer, offset, length) {
-        console.log("read");
+        //console.log("read");
         return hmFS.read(this._f, buffer, offset, length);
     }
 
     write(buffer, offset, length) {
-        console.log("write");
+        //console.log("write");
         hmFS.write(this._f, buffer, offset, length)
     }
 

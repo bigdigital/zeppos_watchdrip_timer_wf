@@ -33,7 +33,7 @@ export class InfoStorage {
     }
 
     read() {
-        console.log('sRead');
+        //console.log('sRead');
         let info = null;
         if (this.storageType === STORAGE_TYPE.FILE) {
             info = this.readFile();
@@ -59,7 +59,7 @@ export class InfoStorage {
     }
 
     readFile() {
-        console.log("readFile")
+        //console.log("readFile")
         try {
             let info = this.storage.fetchText();
             return info;
@@ -69,14 +69,14 @@ export class InfoStorage {
     }
 
     readLocalStorageItem() {
-        console.log("readLocalStorageItem")
+        //console.log("readLocalStorageItem")
         let info = this.storage.getItem(this.itemName);
         return info
     }
 
     unparse(info) {
         if (!info) return;
-        console.log("unparse " + info)
+        //console.log("unparse " + info)
         try {
             let parsed = str2json(info);
 
