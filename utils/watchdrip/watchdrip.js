@@ -1,7 +1,7 @@
 import {getGlobal} from "../../shared/global";
 import {
     WATCHDRIP_APP_ID, WATCHDRIP_INFO_DEFAULTS,
-    WF_INFO_FILE, WF_STATUS_FILE,
+    WF_INFO_FILE, WF_CONFIG_FILE,
 } from "../config/global-constants";
 import {
     DATA_AOD_TIMER_UPDATE_INTERVAL_MS,
@@ -44,10 +44,10 @@ export class Watchdrip {
         /*
         typeof Graph
         */
-        this.graph = new Graph(0, 0, 0, 0);
+        this.graph = null;
         this.infoFile = new Path("data", WF_INFO_FILE, WATCHDRIP_APP_ID);
         this.statusStorage = new InfoStorage(
-            new Path("data", WF_STATUS_FILE, WATCHDRIP_APP_ID), WATCHDRIP_INFO_DEFAULTS
+            new Path("data", WF_CONFIG_FILE, WATCHDRIP_APP_ID), WATCHDRIP_INFO_DEFAULTS
         );
     }
 
@@ -58,6 +58,8 @@ export class Watchdrip {
 
     start() {
         this.updateIntervals = this.getUpdateInterval();
+        this.readInfo();
+        this.updateWidgets();
         if (this.isAOD()) {
             this.widgetDelegateCallbackResumeCall();
         } else {
@@ -121,48 +123,57 @@ export class Watchdrip {
     handleRareCases() {
         //debug.log("handleRareCases");
         let fetch = false;
-        if (this.lastUpdateAttempt == null || this.lastUpdateAttempt == 0 || this.lastUpdateAttempt === undefined) {
+        if (!this.lastUpdateAttempt) {
             debug.log("initial fetch");
             fetch = true;
         } else if (this.isTimeout(this.lastUpdateAttempt, DATA_STALE_TIME_MS)) {
-            debug.log("the side app not responding, force update again");
+            debug.log("force update");
             fetch = true;
         }
         if (fetch) {
             this.fetchInfo();
         }
+        return fetch;
     }
 
     checkUpdates() {
         debug.log("checkUpdates");
 
         this.updateTimesWidget();
+
         this.statusStorage.read();
 
-        const lastUpd = this.statusStorage.data.lastUpd;
+        const lastUpd =  this.statusStorage.data.infoLastUpd ?? this.statusStorage.data.lastUpd ?? 0;
+
         if (!lastUpd) {
             this.handleRareCases();
-        } else {
-            if (this.statusStorage.data.lastError === '') {
-                if (lastUpd !== 0 && this.lastInfoUpdate !== lastUpd) {
-                    //update widgets because the data was modified outside the current scope
-                    debug.log("update from remote");
-                    this.readInfo();
-                    this.lastInfoUpdate = lastUpd;
-                    this.updateWidgets();
-                    this.updateFinish();
-                    return;
-                }
-                if (this.isTimeout(lastUpd, this.updateIntervals)) {
-                    debug.log("reached updateIntervals");
-                    this.fetchInfo();
-                    return;
-                }
-                //data not modified from outside scope so nothing to do
-                //debug.log("data not modified");
-            } else {
-                this.handleRareCases();
+            return;
+        }
+        const isInfoUpdated =
+            this.statusStorage.data?.infoLastUpdSucess === true ||
+            this.statusStorage.data?.lastError === '';
+        if (isInfoUpdated) {
+            // If the data was modified outside the current scope, update widgets
+            if (lastUpd !== 0 && this.lastInfoUpdate !== lastUpd) {
+                console.log("update from remote");
+                this.readInfo();
+                this.lastInfoUpdate = lastUpd;
+                this.updateWidgets();
+                this.updateFinish();
+                return;
             }
+            if (this.lastUpdateAttempt && !this.isTimeout(this.lastUpdateAttempt, DATA_TIMER_UPDATE_INTERVAL_MS)){
+                console.log("too early to update");
+                return;
+            }
+            // Check if the update interval has been reached
+            if (this.isTimeout(lastUpd, this.updateIntervals)) {
+                console.log("reached updateIntervals");
+                this.fetchInfo();
+            }
+        } else {
+            // Handle rare cases for unsuccessful updates or errors
+            this.handleRareCases();
         }
     }
 
@@ -280,7 +291,7 @@ export class Watchdrip {
         debug.log("fetchInfo");
         this.resetLastUpdate();
         this.updateStart();
-        gotoSubpage('update', {},
+        gotoSubpage('update_local', {},
             WATCHDRIP_APP_ID);
     }
 

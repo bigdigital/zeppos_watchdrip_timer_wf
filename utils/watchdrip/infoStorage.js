@@ -40,6 +40,7 @@ export class InfoStorage {
         } else {
             info = this.readLocalStorageItem();
         }
+        //console.log(info);
         if (!info) {
             return false;
         }

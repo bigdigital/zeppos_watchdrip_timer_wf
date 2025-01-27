@@ -3,6 +3,21 @@ export const isMiBand7 = deviceID === "Xiaomi Smart Band 7";
 
 export class Path {
     constructor(scope, path, appid = 0) {
+        this.localFS = false
+        try {
+            const systemInfo = hmSetting.getSystemInfo();
+            if (Number(systemInfo.osVersion) >= 3){
+                this.localFS = true;
+                path = path.substring(path.lastIndexOf('/') + 1);
+                scope = "data";
+            }
+            else {
+                if(path[0] !== "/") path = "/" + path;
+            }
+        } catch (e) {
+
+        }
+
         this.scope = scope;
         this.path = path;
         this.appid = appid;
@@ -40,7 +55,12 @@ export class Path {
 
     stat() {
         if (this.scope == "data") {
-            return hmFS.stat(this.relativePath);
+            if (this.appid) {
+                return hmFS.stat(this.relativePath, {appid: this.appid});
+            }
+            else {
+                return hmFS.stat(this.relativePath);
+            }
         } else {
             return hmFS.stat_asset(this.relativePath);
         }
@@ -77,7 +97,7 @@ export class Path {
     }
 
     remove() {
-        if (this.scope === "assets")
+        if(this.scope === "assets")
             return this.resolve().remove();
 
         try {
@@ -98,61 +118,81 @@ export class Path {
         this.remove();
     }
 
-    fetch() {
-        console.log('fetch file:' + this.relativePath);
-        let chunkSize = 256;
-        let chunkedRead = true;
-        if (!this.scope === "data" && !this.appid) {
-            const [st, e] = this.stat();
-            if (e !== 0) return null;
-            chunkSize = st.size;
-        }
-        let bytesRead = 0
-        const chunks = [];
+    fetch(limit = Infinity) {
+        const [st, e] = this.stat();
+        if (e != 0) return null;
+
+        const length = Math.min(limit, st.size);
+        const buffer = new ArrayBuffer(st.size);
         this.open(hmFS.O_RDONLY);
-        while (true) {
-            const buffer = new ArrayBuffer(chunkSize);
-            const count = this.read(buffer, 0, chunkSize);
-
-            if (count === 0) {
-                break;
-            }
-
-            chunks.push(new Uint8Array(buffer, 0, count));
-            bytesRead += count;
-
-            if (count < chunkSize) {
-                break;
-            }
-        }
-
+        this.read(buffer, 0, length);
         this.close();
-        if (bytesRead === 0) {
-            return null;
-        }
-        // Concatenate all chunks
-        const allData = new Uint8Array(bytesRead);
-        let offset = 0;
-        for (const chunk of chunks) {
-            allData.set(chunk, offset);
-            offset += chunk.length;
-        }
-        return allData;
+
+        return buffer;
     }
 
-    fetchText() {
-        const buf = this.fetch();
+    // fetch() {
+    //     console.log('fetch file:' + this.relativePath);
+    //
+    //     const [st, e] = this.stat();
+    //
+    //     console.log( 'stat size' +  st.size);
+    //
+    //     let chunkSize = 256;
+    //     let bytesRead = 0
+    //     const chunks = [];
+    //     this.open(hmFS.O_RDONLY);
+    //     while (true) {
+    //         const buffer = new ArrayBuffer(chunkSize);
+    //         const count = this.read(buffer, 0, chunkSize);
+    //         console.log("read:" + count)
+    //         if (count <= 0) {
+    //             break;
+    //         }
+    //
+    //         chunks.push(new Uint8Array(buffer, 0, count));
+    //         bytesRead += count;
+    //
+    //         if (count < chunkSize) {
+    //             break;
+    //         }
+    //     }
+    //
+    //     this.close();
+    //     if (bytesRead === 0) {
+    //         return null;
+    //     }
+    //     console.log("bytesRead:" + bytesRead)
+    //     // Concatenate all chunks
+    //     const allData = new Uint8Array(bytesRead);
+    //     let offset = 0;
+    //     for (const chunk of chunks) {
+    //         allData.set(chunk, offset);
+    //         offset += chunk.length;
+    //     }
+    //     return allData;
+    // }
+
+    fetchText(limit = Infinity) {
+        const buf = this.fetch(limit);
         if (!buf) return buf;
-        const str = FsTools.ab2str(buf);
-        return str;
+
+        if (this.localFS){
+            return FsTools.ab2str(buf);
+        }
+        else{
+            return FsTools.decodeUtf8(buf, limit)[0];
+        }
     }
 
     fetchJSON() {
         const text = this.fetchText();
+
         if (!text) return text;
         try {
             return JSON.parse(text);
-        } catch {
+        } catch (e) {
+            console.log('cannot parse json');
             return null;
         }
     }
@@ -166,7 +206,14 @@ export class Path {
     }
 
     overrideWithText(text) {
-        return this.override(FsTools.strToUtf8(text));
+        let buf;
+        if (this.localFS){
+            buf = FsTools.str2ab(text);
+        }
+        else{
+            buf = FsTools.strToUtf8(text);
+        }
+        return this.override(buf);
     }
 
     overrideWithJSON(data) {
@@ -213,7 +260,6 @@ export class Path {
 
     mkdir() {
         const path = isMiBand7 ? this.absolutePath : this.relativePath;
-        console.log("mkdir " + path);
         return hmFS.mkdir(path);
     }
 
@@ -222,12 +268,12 @@ export class Path {
     }
 
     read(buffer, offset, length) {
-        //console.log("read");
-        return hmFS.read(this._f, buffer, offset, length);
+        console.log("read");
+        return hmFS.read(this._f, buffer, offset, length)
     }
 
     write(buffer, offset, length) {
-        //console.log("write");
+        console.log("write");
         hmFS.write(this._f, buffer, offset, length)
     }
 
@@ -284,8 +330,66 @@ export class FsTools {
         return new Uint8Array(utf8).buffer;
     }
 
+    // source: https://stackoverflow.com/questions/13356493/decode-utf-8-with-javascript
+    static decodeUtf8(array, outLimit = Infinity, startPosition = 0) {
+        let out = "";
+        let length = array.length;
+
+        let i = startPosition,
+            c, char2, char3;
+        while (i < length && out.length < outLimit) {
+            c = array[i++];
+            switch (c >> 4) {
+                case 0:
+                case 1:
+                case 2:
+                case 3:
+                case 4:
+                case 5:
+                case 6:
+                case 7:
+                    // 0xxxxxxx
+                    out += String.fromCharCode(c);
+                    break;
+                case 12:
+                case 13:
+                    // 110x xxxx   10xx xxxx
+                    char2 = array[i++];
+                    out += String.fromCharCode(
+                        ((c & 0x1f) << 6) | (char2 & 0x3f)
+                    );
+                    break;
+                case 14:
+                    // 1110 xxxx  10xx xxxx  10xx xxxx
+                    char2 = array[i++];
+                    char3 = array[i++];
+                    out += String.fromCharCode(
+                        ((c & 0x0f) << 12) |
+                        ((char2 & 0x3f) << 6) |
+                        ((char3 & 0x3f) << 0)
+                    );
+                    break;
+            }
+        }
+
+        return [out, i - startPosition];
+    }
+
     static ab2str(buf) {
         return String.fromCharCode.apply(null, new Uint8Array(buf));
+    }
+
+    static str2ab(str) {
+        var buf = new ArrayBuffer(str.length)
+        var bufView = new Uint8Array(buf)
+        for (var i = 0, strLen = str.length; i < strLen; i++) {
+            bufView[i] = str.charCodeAt(i)
+        }
+        return buf
+    }
+
+    static Utf8ArrayToStr(array) {
+        return FsTools.decodeUtf8(array)[0];
     }
 
     static printBytes(val) {
