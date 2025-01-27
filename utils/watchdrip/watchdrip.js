@@ -97,7 +97,9 @@ export class Watchdrip {
         this.intervalTimer = this.globalNS.setInterval(() => {
             this.checkUpdates();
         }, interval);
-        this.checkUpdates(); //for zepp os3 need to start manually
+        this.globalNS.setTimeout(() => {
+            this.checkUpdates();
+        }, 500);
     }
 
     stopDataUpdates() {
